@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Show Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: sticky header with search + tabs, one content column; detail view is poster beside facts, stacking on phones. */
+:root {
+  --bg: #F3F5F9; --surface: #FFFFFF; --sunk: #E8ECF3; --ink: #15203B; --muted: #56617B;
+  --line: #D9DFEA; --accent: #C8102E; --accent-ink: #FFFFFF; --ok: #1E7A4C; --ok-bg: #E2F3EA;
+  --warn-bg: #FFF4D6; --warn-ink: #7A5200;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Verdana", system-ui, sans-serif;
+  --base: 18px; --radius: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1322; --surface: #161F35; --sunk: #1F2A44; --ink: #EEF1F7; --muted: #A4AEC4;
+  --line: #2B3654; --accent: #FF5C70; --accent-ink: #1A0006; --ok: #6FD7A1; --ok-bg: #143326;
+  --warn-bg: #3A2E0E; --warn-ink: #F7D27A; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0D1322; --surface: #161F35; --sunk: #1F2A44; --ink: #EEF1F7; --muted: #A4AEC4;
+  --line: #2B3654; --accent: #FF5C70; --accent-ink: #1A0006; --ok: #6FD7A1; --ok-bg: #143326;
+  --warn-bg: #3A2E0E; --warn-ink: #F7D27A; color-scheme: dark; }
+:root.big { --base: 21px; }
+
+* { box-sizing: border-box; }
+html { font-size: var(--base); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.5; }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.01em; }
+.brand .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
+form.search { flex: 1 1 320px; display: flex; gap: 8px; min-width: 0; }
+form.search input { flex: 1; min-width: 0; padding: 12px 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--bg); }
+form.search input:focus { border-color: var(--ink); outline: none; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; width: 100%; }
+nav.tabs a { text-decoration: none; padding: 10px 14px; border-radius: 999px; font-weight: 700; white-space: nowrap; color: var(--muted); }
+nav.tabs a[aria-current="page"] { background: var(--ink); color: var(--bg); }
+nav.tabs a:hover:not([aria-current="page"]) { background: var(--sunk); color: var(--ink); }
+.count { display: inline-block; min-width: 1.5em; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 0.75rem; text-align: center; }
+
+main { padding-block: 24px 64px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.page-head h1 { font-size: 2rem; }
+.sub { color: var(--muted); margin: 4px 0 0; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 999px; border: 2px solid var(--ink); background: var(--ink); color: var(--bg); font-weight: 700; cursor: pointer; text-decoration: none; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.saved { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.btn:hover { filter: brightness(1.1); }
+.btn.small { padding: 6px 12px; font-size: 0.85rem; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.chip { padding: 8px 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); font-weight: 700; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.chip small { font-weight: 400; opacity: 0.8; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 18px; align-items: end; }
+.filters label { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+select, .filters input { padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--ink); }
+.check { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; text-transform: none !important; letter-spacing: 0 !important; font-size: 1rem !important; color: var(--ink) !important; font-weight: 400 !important; cursor: pointer; }
+.check input { width: 20px; height: 20px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 18px; }
+.card { position: relative; display: flex; flex-direction: column; gap: 8px; text-decoration: none; min-width: 0; }
+.poster { aspect-ratio: 210 / 295; width: 100%; max-width: 100%; border-radius: var(--radius); background: var(--sunk); overflow: hidden; display: grid; place-items: center; color: var(--muted); font-family: var(--display); font-size: 1.1rem; text-align: center; padding: 0; }
+.poster img { width: 100%; height: 100%; object-fit: cover; }
+.poster .ph { padding: 12px; }
+.card:hover .poster img { transform: scale(1.03); }
+.poster img { transition: transform .25s; }
+.card h3 { font-size: 1.02rem; font-family: var(--body); font-weight: 700; }
+.meta { font-size: 0.85rem; color: var(--muted); }
+.svc { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; padding: 3px 9px; border-radius: 6px; background: var(--sunk); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svc i { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--c, var(--muted)); }
+.badge { position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: var(--accent); color: var(--accent-ink); }
+.save-dot { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--surface); color: var(--ink); font-size: 1.3rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgb(0 0 0 / .25); display: grid; place-items: center; }
+.save-dot.on { background: var(--ok); color: var(--surface); }
+
+.section-title { font-size: 1.3rem; margin: 30px 0 14px; display: flex; align-items: baseline; gap: 10px; }
+.section-title small { font-family: var(--body); font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+
+.empty, .note { padding: 22px; border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--line); color: var(--muted); }
+.note { border-style: solid; background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; font-size: 0.92rem; }
+.loading { display: flex; align-items: center; gap: 12px; color: var(--muted); padding: 30px 0; }
+.spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } .poster img { transition: none; } }
+
+/* Detail */
+.back { margin-bottom: 18px; }
+.detail { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.detail .poster { box-shadow: 0 10px 30px rgb(0 0 0 / .18); }
+.detail h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); margin: 10px 0 16px; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 0.85rem; }
+.pill.live { background: var(--ok-bg); color: var(--ok); }
+.pill.ended { background: var(--sunk); color: var(--muted); }
+.pill.wait { background: var(--warn-bg); color: var(--warn-ink); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.synopsis { max-width: 65ch; font-size: 1.05rem; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-top: 18px; }
+.box h2 { font-size: 1.15rem; margin-bottom: 10px; }
+.where-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 8px 0; border-top: 1px solid var(--line); }
+.where-row:first-of-type { border-top: none; }
+.where-row .name { font-weight: 700; font-size: 1.05rem; }
+.price { font-variant-numeric: tabular-nums; font-weight: 700; }
+.have { color: var(--ok); font-weight: 700; }
+.logos { display: flex; flex-wrap: wrap; gap: 10px; }
+.logo { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 10px; background: var(--sunk); font-weight: 700; font-size: 0.9rem; }
+.logo img { width: 34px; height: 34px; border-radius: 8px; }
+.next { display: flex; gap: 14px; align-items: center; }
+.next .when { font-family: var(--display); font-weight: 800; font-size: 1.4rem; color: var(--accent); }
+.trailer { margin-top: 14px; aspect-ratio: 16 / 9; width: 100%; max-width: 100%; border-radius: var(--radius); background: #000; overflow: hidden; }
+.trailer iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+details.season { border-top: 1px solid var(--line); }
+details.season:first-of-type { border-top: none; }
+details.season summary { cursor: pointer; padding: 12px 0; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; list-style: none; }
+details.season summary::-webkit-details-marker { display: none; }
+details.season summary::before { content: "▸"; color: var(--muted); width: 1em; }
+details.season[open] summary::before { content: "▾"; }
+details.season summary b { font-family: var(--display); font-size: 1.1rem; }
+.eps { list-style: none; padding: 0 0 12px; margin: 0; display: grid; gap: 2px; }
+.ep { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 4px 12px; padding: 8px 10px; border-radius: 8px; }
+.ep:nth-child(odd) { background: var(--bg); }
+.ep .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.ep .d { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ep .s { grid-column: 2 / 4; font-size: 0.9rem; color: var(--muted); }
+.ep.future .d { color: var(--accent); font-weight: 700; }
+.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.person { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.person img, .person .face { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--sunk); flex: none; }
+.person div { min-width: 0; font-size: 0.9rem; }
+.person small { display: block; color: var(--muted); }
+
+/* Schedule list */
+.slist { display: grid; gap: 10px; }
+.srow { display: grid; grid-template-columns: 5.5em 64px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 14px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); text-decoration: none; }
+.srow:hover { border-color: var(--ink); }
+.srow .t { font-weight: 700; font-variant-numeric: tabular-nums; }
+.srow .thumb { width: 64px; aspect-ratio: 210/295; border-radius: 8px; overflow: hidden; background: var(--sunk); }
+.srow .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.srow h3 { font-size: 1.05rem; font-family: var(--body); }
+
+/* Costs */
+.cost-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.cost-table td { padding: 10px 6px; border-top: 1px solid var(--line); vertical-align: middle; }
+.cost-table tr:first-child td { border-top: none; }
+.cost-table .r { text-align: right; white-space: nowrap; }
+.total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 2px solid var(--ink); margin-top: 6px; }
+.total b { font-family: var(--display); font-size: 1.8rem; }
+.tip { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--ok-bg); color: var(--ok); font-size: 0.95rem; }
+.two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.owned { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; }
+footer { color: var(--muted); font-size: 0.85rem; padding-block: 24px 40px; border-top: 1px solid var(--line); }
+
+@media (max-width: 760px) {
+  .detail { grid-template-columns: 1fr; gap: 18px; }
+  .detail .poster { max-width: 200px; }
+  .two { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px 12px; }
+  .srow { grid-template-columns: 52px minmax(0, 1fr); }
+  .srow .t { grid-column: 1 / 3; font-size: 0.9rem; color: var(--muted); }
+  .srow .thumb { width: 52px; }
+  .srow .svc { grid-column: 2; justify-self: start; }
+  .page-head h1 { font-size: 1.6rem; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#tonight"><span class="dot" aria-hidden="true"></span>Show Finder</a>
+    <form class="search" id="searchForm" role="search">
+      <input id="q" type="search" placeholder="Search any TV show…" aria-label="Search any TV show" autocomplete="off">
+      <button class="btn" type="submit">Search</button>
+    </form>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#tonight" data-tab="tonight">New episodes</a>
+      <a href="#browse" data-tab="browse">Browse all shows</a>
+      <a href="#mylist" data-tab="mylist">My shows <span class="count" id="listCount">0</span></a>
+      <a href="#settings" data-tab="settings">Settings</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<footer class="wrap">
+  Show data from <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVmaze</a>.
+  Streaming availability and trailers from <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a> when a key is added in Settings.
+  Prices are approximate US monthly prices from mid-2026; check the service's own site before signing up.
+</footer>
+
+<script>
+"use strict";
+const TVM = "https://api.tvmaze.com";
+// TMDB key is filled in at deploy time from the TMDB_KEY repository secret (see .github/workflows/pages.yml).
+// A key saved in Settings overrides it.
+const DEPLOY_TMDB_KEY = "__TMDB_KEY__";
+const BUILT_IN_TMDB_KEY = DEPLOY_TMDB_KEY.includes("TMDB_KEY") ? "" : DEPLOY_TMDB_KEY;
+const tmdbKey = () => ((settings.tmdbKey || "").trim() || BUILT_IN_TMDB_KEY.trim());
+const app = document.getElementById("app");
+
+/* ---------- small helpers ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const stripHtml = h => h ? new DOMParser().parseFromString(h, "text/html").body.textContent.trim() : "";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const money = n => n === 0 ? "Free" : "$" + n.toFixed(2);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("sf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("sf." + k, JSON.stringify(v)); } catch {} }
+};
+let myList = store.get("list", []);
+let settings = Object.assign({ tmdbKey: "", bigText: false, owned: [], plans: {}, hideTalk: true, country: "US" }, store.get("settings", {}));
+const saveSettings = () => store.set("settings", settings);
+const saveList = () => { store.set("list", myList); const c = document.getElementById("listCount"); c.textContent = myList.length; c.hidden = !myList.length; };
+
+const fmtDate = (d, opts) => d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString(undefined, opts || { month: "short", day: "numeric", year: "numeric" }) : "";
+const fmtTime = iso => new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+function relDays(iso) {
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  const b = new Date(iso); b.setHours(0, 0, 0, 0);
+  const n = Math.round((b - a) / 864e5);
+  return n === 0 ? "Today" : n === 1 ? "Tomorrow" : n < 0 ? `${-n} days ago` : n < 7 ? `In ${n} days` : n < 60 ? `In ${Math.round(n / 7)} week${Math.round(n / 7) > 1 ? "s" : ""}` : `In ${Math.round(n / 30)} months`;
+}
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/* ---------- network ---------- */
+const memo = new Map();
+function getJSON(url, opts) {
+  if (memo.has(url)) return memo.get(url);
+  const p = (async () => {
+    for (let i = 0; i < 4; i++) {
+      const r = await fetch(url, opts);
+      if (r.status === 429) { await sleep(1500 * (i + 1)); continue; }
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }
+    throw new Error("The show database is busy. Try again in a few seconds.");
+  })();
+  memo.set(url, p);
+  p.catch(() => memo.delete(url));
+  return p;
+}
+const tvm = path => getJSON(TVM + path);
+const showFull = id => tvm(`/shows/${id}?embed[]=seasons&embed[]=episodes&embed[]=cast&embed[]=nextepisode`);
+const showNext = id => tvm(`/shows/${id}?embed=nextepisode`);
+
+function tmdb(path) {
+  const k = tmdbKey();
+  if (!k) return Promise.resolve(null);
+  const bearer = k.startsWith("eyJ");
+  const url = "https://api.themoviedb.org/3" + path + (bearer ? "" : (path.includes("?") ? "&" : "?") + "api_key=" + encodeURIComponent(k));
+  return getJSON(url, bearer ? { headers: { Authorization: "Bearer " + k } } : undefined).catch(() => null);
+}
+async function tmdbIdFor(show) {
+  if (show.externals?.imdb) {
+    const r = await tmdb(`/find/${show.externals.imdb}?external_source=imdb_id`);
+    if (r?.tv_results?.[0]) return r.tv_results[0].id;
+  }
+  const yr = show.premiered?.slice(0, 4);
+  const r = await tmdb(`/search/tv?query=${encodeURIComponent(show.name)}${yr ? "&first_air_date_year=" + yr : ""}`);
+  return r?.results?.[0]?.id ?? null;
+}
+
+/* ---------- streaming services & prices (approx. US, mid-2026) ---------- */
+const SERVICES = [
+  { id: "netflix", name: "Netflix", c: "#E50914", url: "https://www.netflix.com", plans: [["Standard with ads", 7.99], ["Standard", 17.99], ["Premium", 24.99]], home: ["Netflix"] },
+  { id: "hulu", name: "Hulu", c: "#1CE783", url: "https://www.hulu.com", plans: [["With ads", 11.99], ["No ads", 18.99]], home: ["Hulu"], later: ["ABC", "FX", "FXX", "FX on Hulu", "Freeform", "FOX", "FX Networks"] },
+  { id: "disney", name: "Disney+", c: "#113CCF", url: "https://www.disneyplus.com", plans: [["With ads", 11.99], ["Premium (no ads)", 18.99]], home: ["Disney+"], later: ["Disney Channel", "Disney Junior", "Disney XD", "National Geographic", "Nat Geo Wild"] },
+  { id: "max", name: "HBO Max", c: "#5822B4", url: "https://www.hbomax.com", plans: [["Basic with ads", 10.99], ["Standard", 18.49], ["Premium", 22.99]], home: ["HBO Max", "Max", "HBO"], later: ["Cinemax", "TNT", "TBS", "Adult Swim", "Cartoon Network", "CNN", "truTV", "TLC", "HGTV", "Food Network", "Discovery", "Discovery Channel", "Investigation Discovery", "ID", "Animal Planet", "Travel Channel", "Magnolia Network", "OWN"] },
+  { id: "prime", name: "Prime Video", c: "#1399FF", url: "https://www.amazon.com/primevideo", plans: [["Prime Video only", 8.99], ["Included with Amazon Prime", 14.99]], home: ["Prime Video", "Amazon", "Amazon Prime Video", "Amazon Freevee", "Freevee", "IMDb TV"] },
+  { id: "apple", name: "Apple TV", c: "#8E8E93", url: "https://tv.apple.com", plans: [["Monthly", 12.99]], home: ["Apple TV+", "Apple TV"] },
+  { id: "peacock", name: "Peacock", c: "#F5B400", url: "https://www.peacocktv.com", plans: [["Premium (with ads)", 10.99], ["Premium Plus", 16.99]], home: ["Peacock", "NBC.com"], later: ["NBC", "Bravo", "USA Network", "Syfy", "SYFY", "E!", "Oxygen", "Telemundo"] },
+  { id: "paramount", name: "Paramount+", c: "#0064FF", url: "https://www.paramountplus.com", plans: [["Essential (with ads)", 8.99], ["Premium", 13.99]], home: ["Paramount+", "CBS All Access"], later: ["CBS", "Showtime", "MTV", "Comedy Central", "Nickelodeon", "BET", "Paramount Network", "CMT", "TV Land", "Smithsonian Channel"] },
+  { id: "amc", name: "AMC+", c: "#FFD200", url: "https://www.amcplus.com", plans: [["Monthly", 9.99]], home: ["AMC+", "Shudder"], later: ["AMC", "BBC America", "IFC", "SundanceTV", "WE tv"] },
+  { id: "starz", name: "Starz", c: "#222222", url: "https://www.starz.com", plans: [["Monthly", 10.99]], home: ["Starz", "STARZ"] },
+  { id: "mgm", name: "MGM+", c: "#B8860B", url: "https://www.mgmplus.com", plans: [["Monthly", 6.99]], home: ["MGM+", "Epix", "EPIX"] },
+  { id: "britbox", name: "BritBox", c: "#0E2D6E", url: "https://www.britbox.com", plans: [["Monthly", 8.99]], home: ["BritBox"], later: ["BBC One", "BBC Two", "ITV", "ITV1", "ITVX", "BBC iPlayer"] },
+  { id: "acorn", name: "Acorn TV", c: "#2E7D32", url: "https://acorn.tv", plans: [["Monthly", 8.99]], home: ["Acorn TV"] },
+  { id: "pbs", name: "PBS", c: "#2638C4", url: "https://www.pbs.org/passport", plans: [["Free (live & recent episodes)", 0], ["PBS Passport (donation)", 5]], home: ["PBS"] },
+  { id: "hallmark", name: "Hallmark+", c: "#5B2C83", url: "https://www.hallmarkplus.com", plans: [["Monthly", 7.99]], home: ["Hallmark+", "Hallmark Movies Now"], later: ["Hallmark Channel", "Hallmark Mystery", "Hallmark Movies & Mysteries"] },
+  { id: "crunchyroll", name: "Crunchyroll", c: "#F47521", url: "https://www.crunchyroll.com", plans: [["Fan", 7.99], ["Mega Fan", 11.99]], home: ["Crunchyroll"] },
+  { id: "free", name: "Free streaming", c: "#2BAE66", url: "https://tubitv.com", plans: [["Free with ads", 0]], home: ["Tubi", "Pluto TV", "The Roku Channel", "YouTube", "Plex"] },
+  { id: "livetv", name: "Live TV (cable or YouTube TV)", c: "#7A869A", url: "https://tv.youtube.com", plans: [["YouTube TV", 82.99], ["Already have cable", 0]], home: [] }
+];
+const SVC = Object.fromEntries(SERVICES.map(s => [s.id, s]));
+const BROADCAST = ["ABC", "CBS", "NBC", "FOX", "The CW", "PBS"];
+const norm = s => (s || "").toLowerCase().replace(/[^a-z0-9+]/g, "");
+const HOME = new Map(), LATER = new Map();
+SERVICES.forEach(s => { (s.home || []).forEach(n => HOME.set(norm(n), s.id)); (s.later || []).forEach(n => LATER.set(norm(n), s.id)); });
+
+function platformOf(show) {
+  const ch = show.webChannel || show.network;
+  if (!ch) return { channel: null, svc: null };
+  const key = norm(ch.name);
+  const home = HOME.get(key);
+  if (home) return { channel: ch.name, svc: home, kind: show.webChannel ? "stream" : "home" };
+  const later = LATER.get(key);
+  const broadcast = BROADCAST.includes(ch.name);
+  if (later) return { channel: ch.name, svc: later, kind: "later", broadcast };
+  if (show.network && (ch.country?.code === "US")) return { channel: ch.name, svc: "livetv", kind: "cable", broadcast };
+  return { channel: ch.name, svc: null, kind: "other", broadcast };
+}
+function matchProvider(name) {
+  const n = norm(name).replace(/(standardwithads|withads|amazonchannel|appletvchannel|rokupremiumchannel)$/, "");
+  for (const s of SERVICES) {
+    if (norm(s.name) === n || (s.home || []).some(h => norm(h) === n)) return s.id;
+  }
+  if (n.startsWith("netflix")) return "netflix";
+  if (n.startsWith("amazonprime")) return "prime";
+  if (n.startsWith("paramount")) return "paramount";
+  if (n.startsWith("appletv")) return "apple";
+  if (n.includes("hbo") || n === "max") return "max";
+  return null;
+}
+const planIdx = id => Math.min(settings.plans[id] ?? 0, SVC[id].plans.length - 1);
+const planPrice = id => SVC[id].plans[planIdx(id)][1];
+const fromPrice = id => Math.min(...SVC[id].plans.map(p => p[1]));
+const owns = id => settings.owned.includes(id);
+
+function svcChip(show) {
+  const p = platformOf(show);
+  if (!p.channel) return "";
+  const s = p.svc && SVC[p.svc];
+  return `<span class="svc" style="--c:${s ? s.c : "var(--muted)"}"><i></i>${esc(p.kind === "later" || p.kind === "cable" ? p.channel : (s ? s.name : p.channel))}</span>`;
+}
+function statusPill(show) {
+  const st = show.status;
+  if (st === "Running") return `<span class="pill live">Still airing</span>`;
+  if (st === "Ended") return `<span class="pill ended">Ended</span>`;
+  if (st === "In Development") return `<span class="pill wait">Coming soon</span>`;
+  return `<span class="pill wait">Waiting on renewal</span>`;
+}
+const years = s => s.premiered ? s.premiered.slice(0, 4) + (s.ended ? (s.ended.slice(0, 4) !== s.premiered.slice(0, 4) ? "–" + s.ended.slice(0, 4) : "") : s.status === "Running" ? "–now" : "") : "Not yet aired";
+
+/* ---------- My shows ---------- */
+const inList = id => myList.some(x => x.id === id);
+function toggleSave(show) {
+  if (inList(show.id)) myList = myList.filter(x => x.id !== show.id);
+  else myList.push({ id: show.id, name: show.name, img: show.image?.medium || "", svc: platformOf(show).svc, added: Date.now() });
+  saveList();
+}
+const listShowCache = new Map();
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-save]");
+  if (!b) return;
+  e.preventDefault();
+  const id = +b.dataset.save;
+  const show = listShowCache.get(id) || await tvm("/shows/" + id);
+  toggleSave(show);
+  document.querySelectorAll(`[data-save="${id}"]`).forEach(el => paintSave(el, inList(id)));
+  if (currentTab() === "mylist") renderMyList();
+});
+function paintSave(el, on) {
+  if (el.classList.contains("save-dot")) { el.classList.toggle("on", on); el.textContent = on ? "✓" : "+"; el.setAttribute("aria-label", on ? "Remove from My shows" : "Add to My shows"); }
+  else { el.classList.toggle("saved", on); el.textContent = on ? "✓ In My shows" : "+ Add to My shows"; }
+}
+
+/* ---------- cards ---------- */
+function posterHTML(show, small) {
+  const img = small ? show.image?.medium : (show.image?.original || show.image?.medium);
+  return img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="ph">${esc(show.name)}</span>`;
+}
+function card(show, badge) {
+  listShowCache.set(show.id, show);
+  const on = inList(show.id);
+  return `<div class="card">
+    <a href="#show/${show.id}" class="poster" aria-label="${esc(show.name)}">${posterHTML(show, true)}</a>
+    ${badge ? `<span class="badge">${esc(badge)}</span>` : ""}
+    <button class="save-dot ${on ? "on" : ""}" data-save="${show.id}" aria-label="${on ? "Remove from" : "Add to"} My shows">${on ? "✓" : "+"}</button>
+    <a href="#show/${show.id}" style="text-decoration:none"><h3>${esc(show.name)}</h3></a>
+    <div class="meta">${esc(years(show))}${show.rating?.average ? ` · ★ ${show.rating.average}` : ""}</div>
+    <div>${svcChip(show)}</div>
+  </div>`;
+}
+const loading = msg => `<div class="loading"><span class="spin"></span>${esc(msg || "Loading…")}</div>`;
+const errorBox = err => `<div class="note">Something went wrong loading shows: ${esc(err.message || err)}. Check your internet connection and try again.</div>`;
+
+/* ---------- routing ---------- */
+const currentTab = () => (location.hash.slice(1) || "tonight").split("/")[0].split("?")[0];
+let renderToken = 0;
+function route() {
+  const h = location.hash.slice(1) || "tonight";
+  const [tab, arg] = h.split("/");
+  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  renderToken++;
+  window.scrollTo(0, 0);
+  if (tab === "show") return renderShow(+arg);
+  if (tab === "search") return renderSearch(decodeURIComponent(arg || ""));
+  if (tab === "browse") return renderBrowse();
+  if (tab === "mylist") return renderMyList();
+  if (tab === "settings") return renderSettings();
+  return renderTonight(arg);
+}
+window.addEventListener("hashchange", route);
+document.getElementById("searchForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const q = document.getElementById("q").value.trim();
+  if (q) location.hash = "search/" + encodeURIComponent(q);
+});
+
+/* ---------- New episodes (schedule) ---------- */
+const HIDE_TYPES = ["Talk Show", "News", "Sports"];
+async function scheduleFor(date) {
+  const [tv, web] = await Promise.all([
+    tvm(`/schedule?country=${settings.country}&date=${date}`),
+    tvm(`/schedule/web?date=${date}`)
+  ]);
+  const rows = [];
+  (tv || []).forEach(ep => rows.push({ ep, show: ep.show, web: false }));
+  (web || []).forEach(ep => {
+    const show = ep._embedded?.show; if (!show) return;
+    const wc = show.webChannel;
+    const cc = wc?.country?.code;
+    const known = wc && HOME.has(norm(wc.name));
+    if ((cc && cc !== settings.country && !known) || (!known && show.language !== "English")) return;
+    rows.push({ ep, show, web: true });
+  });
+  const byShow = new Map();
+  for (const r of rows) {
+    if (settings.hideTalk && HIDE_TYPES.includes(r.show.type)) continue;
+    const k = r.show.id;
+    if (byShow.has(k)) { byShow.get(k).count++; continue; }
+    byShow.set(k, { ...r, count: 1 });
+  }
+  return [...byShow.values()];
+}
+function epLabel(ep, count) {
+  if (count > 1) return `${count} new episodes · Season ${ep.season}`;
+  if (ep.season === 1 && ep.number === 1) return "Series premiere";
+  if (ep.number === 1) return `Season ${ep.season} premiere`;
+  return `Season ${ep.season}, Episode ${ep.number ?? "special"}`;
+}
+async function renderTonight(arg) {
+  const tok = renderToken;
+  const days = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return d; });
+  const sel = arg && days.some(d => isoDay(d) === arg) ? arg : isoDay(days[0]);
+  app.innerHTML = `
+    <div class="page-head"><div><h1>New episodes</h1><p class="sub">What's coming out on TV and streaming each day this week.</p></div>
+      <label class="check"><input type="checkbox" id="hideTalk" ${settings.hideTalk ? "checked" : ""}> Hide news, talk and sports</label></div>
+    <div class="chips" role="group" aria-label="Pick a day">${days.map((d, i) => `<button class="chip" data-day="${isoDay(d)}" aria-pressed="${isoDay(d) === sel}">${i === 0 ? "Today" : i === 1 ? "Tomorrow" : d.toLocaleDateString(undefined, { weekday: "long" })} <small>${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</small></button>`).join("")}</div>
+    <div id="sched">${loading("Checking the TV schedule…")}</div>`;
+  app.querySelectorAll("[data-day]").forEach(b => b.onclick = () => location.hash = "tonight/" + b.dataset.day);
+  app.querySelector("#hideTalk").onchange = e => { settings.hideTalk = e.target.checked; saveSettings(); renderTonight(sel); };
+  try {
+    const rows = await scheduleFor(sel);
+    if (tok !== renderToken) return;
+    const web = rows.filter(r => r.web).sort((a, b) => (b.show.weight || 0) - (a.show.weight || 0));
+    const tv = rows.filter(r => !r.web).sort((a, b) => (a.ep.airstamp || "").localeCompare(b.ep.airstamp || ""));
+    const mine = rows.filter(r => inList(r.show.id));
+    const row = r => {
+      listShowCache.set(r.show.id, r.show);
+      return `<a class="srow" href="#show/${r.show.id}">
+      <span class="t">${r.web ? "All day" : r.ep.airstamp ? fmtTime(r.ep.airstamp) : "TBA"}</span>
+      <span class="thumb">${r.show.image ? `<img src="${esc(r.show.image.medium)}" alt="" loading="lazy">` : ""}</span>
+      <span style="min-width:0"><h3>${esc(r.show.name)}${inList(r.show.id) ? ' <span class="have">✓ My show</span>' : ""}</h3><span class="meta">${esc(epLabel(r.ep, r.count))}${r.count === 1 && r.ep.name && !/^Episode \d+$/.test(r.ep.name) ? " · “" + esc(r.ep.name) + "”" : ""}</span></span>
+      ${svcChip(r.show)}
+    </a>`; };
+    document.getElementById("sched").innerHTML = (mine.length ? `<h2 class="section-title">From My shows <small>${mine.length}</small></h2><div class="slist">${mine.map(row).join("")}</div>` : "") +
+      `<h2 class="section-title">Streaming releases <small>${web.length} shows</small></h2>` +
+      (web.length ? `<div class="grid">${web.slice(0, 48).map(r => card(r.show, r.count > 1 ? `${r.count} new` : epLabel(r.ep, 1).includes("premiere") ? "Premiere" : "New")).join("")}</div>` : `<div class="empty">No streaming releases listed for this day.</div>`) +
+      `<h2 class="section-title">On TV tonight <small>${tv.length} shows · times in your time zone</small></h2>` +
+      (tv.length ? `<div class="slist">${tv.map(row).join("")}</div>` : `<div class="empty">No TV episodes listed for this day yet.</div>`);
+  } catch (err) { if (tok === renderToken) document.getElementById("sched").innerHTML = errorBox(err); }
+}
+
+/* ---------- Search ---------- */
+async function renderSearch(q) {
+  const tok = renderToken;
+  document.getElementById("q").value = q;
+  app.innerHTML = `<div class="page-head"><div><h1>Results for “${esc(q)}”</h1></div></div><div id="res">${loading("Searching every show…")}</div>`;
+  try {
+    const res = await tvm("/search/shows?q=" + encodeURIComponent(q));
+    if (tok !== renderToken) return;
+    document.getElementById("res").innerHTML = res?.length
+      ? `<div class="grid">${res.map(r => card(r.show)).join("")}</div>`
+      : `<div class="empty">No shows matched “${esc(q)}”. Check the spelling, or try just one word from the title.</div>`;
+  } catch (err) { if (tok === renderToken) document.getElementById("res").innerHTML = errorBox(err); }
+}
+
+/* ---------- Browse ---------- */
+const GENRES = ["Action", "Adventure", "Anime", "Children", "Comedy", "Crime", "Drama", "Espionage", "Family", "Fantasy", "Food", "History", "Horror", "Legal", "Medical", "Music", "Mystery", "Nature", "Romance", "Science-Fiction", "Sports", "Supernatural", "Thriller", "Travel", "War", "Western"];
+const KINDS = ["Scripted", "Reality", "Documentary", "Animation", "Game Show", "Talk Show", "Variety"];
+const browse = { pages: new Map(), lastPage: null, nextLow: 0, nextHigh: null, limit: 60, f: Object.assign({ genre: "", kind: "", svc: "", status: "", lang: "English", sort: "popular" }, store.get("browseFilters", {})) };
+async function findLastPage() {
+  if (browse.lastPage != null) return browse.lastPage;
+  let p = store.get("lastPage", 390);
+  let data = await tvm(`/shows?page=${p}`);
+  while (!data && p > 0) { p -= 3; data = await tvm(`/shows?page=${p}`); }
+  while (await tvm(`/shows?page=${p + 1}`)) p++;
+  store.set("lastPage", p);
+  browse.lastPage = p; browse.nextHigh = p;
+  return p;
+}
+async function loadMorePages(n) {
+  await findLastPage();
+  const want = [];
+  for (let i = 0; i < n; i++) {
+    if (i % 2 === 0 && browse.nextHigh >= browse.nextLow) want.push(browse.nextHigh--);
+    else if (browse.nextLow <= browse.nextHigh) want.push(browse.nextLow++);
+  }
+  const got = await Promise.all(want.map(p => tvm(`/shows?page=${p}`)));
+  want.forEach((p, i) => browse.pages.set(p, got[i] || []));
+}
+const allLoaded = () => [...browse.pages.values()].flat();
+function filtered() {
+  const f = browse.f;
+  let list = allLoaded().filter(s =>
+    (!f.genre || s.genres.includes(f.genre)) &&
+    (!f.kind || s.type === f.kind) &&
+    (!f.lang || s.language === f.lang) &&
+    (!f.status || (f.status === "running" ? s.status === "Running" : s.status === "Ended")) &&
+    (!f.svc || (f.svc === "antenna" ? BROADCAST.includes(s.network?.name) : f.svc === "mine" ? settings.owned.includes(platformOf(s).svc) : platformOf(s).svc === f.svc)));
+  const sorters = {
+    popular: (a, b) => (b.weight || 0) - (a.weight || 0) || (b.rating?.average || 0) - (a.rating?.average || 0),
+    rating: (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0),
+    newest: (a, b) => (b.premiered || "").localeCompare(a.premiered || ""),
+    az: (a, b) => a.name.localeCompare(b.name)
+  };
+  return list.sort(sorters[f.sort] || sorters.popular);
+}
+async function renderBrowse() {
+  const tok = renderToken;
+  const f = browse.f;
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(label)}</option>`;
+  app.innerHTML = `
+    <div class="page-head"><div><h1>Browse all shows</h1><p class="sub" id="bcount">Every show in the TVmaze database, a batch at a time.</p></div></div>
+    <div class="filters">
+      <label>Sort by<select id="f-sort">${opt("popular", "Most popular", f.sort)}${opt("rating", "Highest rated", f.sort)}${opt("newest", "Newest first", f.sort)}${opt("az", "A to Z", f.sort)}</select></label>
+      <label>Genre<select id="f-genre">${opt("", "Any genre", f.genre)}${GENRES.map(g => opt(g, g.replace("-", " "), f.genre)).join("")}</select></label>
+      <label>Kind of show<select id="f-kind">${opt("", "Any kind", f.kind)}${KINDS.map(k => opt(k, k, f.kind)).join("")}</select></label>
+      <label>Where to watch<select id="f-svc">${opt("", "Anywhere", f.svc)}${opt("mine", "Services I have", f.svc)}${opt("antenna", "Free TV (antenna)", f.svc)}${SERVICES.map(s => opt(s.id, s.name, f.svc)).join("")}</select></label>
+      <label>Status<select id="f-status">${opt("", "Any", f.status)}${opt("running", "Still airing", f.status)}${opt("ended", "Ended", f.status)}</select></label>
+      <label>Language<select id="f-lang">${opt("English", "English", f.lang)}${opt("", "Any language", f.lang)}${["Spanish", "Korean", "Japanese", "French", "German", "Italian"].map(l => opt(l, l, f.lang)).join("")}</select></label>
+    </div>
+    <div id="bres">${loading("Loading shows…")}</div>`;
+  ["sort", "genre", "kind", "svc", "status", "lang"].forEach(k => app.querySelector("#f-" + k).onchange = e => { f[k] = e.target.value; browse.limit = 60; store.set("browseFilters", f); paintBrowse(); });
+  try {
+    if (!browse.pages.size) await loadMorePages(6);
+    if (tok !== renderToken) return;
+    paintBrowse();
+  } catch (err) { if (tok === renderToken) document.getElementById("bres").innerHTML = errorBox(err); }
+}
+function paintBrowse() {
+  const list = filtered();
+  const total = allLoaded().length;
+  const done = browse.nextLow > browse.nextHigh;
+  document.getElementById("bcount").textContent = `${list.length.toLocaleString()} matches from ${total.toLocaleString()} shows loaded so far${done ? " (that's all of them)" : ""}.`;
+  document.getElementById("bres").innerHTML = (list.length ? `<div class="grid">${list.slice(0, browse.limit).map(s => card(s)).join("")}</div>` : `<div class="empty">No loaded shows match these filters yet. Load more shows, or loosen a filter.</div>`) +
+    `<div class="actions" style="justify-content:center;margin-top:28px">${list.length > browse.limit ? `<button class="btn ghost" id="more">Show more</button>` : ""}${done ? "" : `<button class="btn" id="morePages">Load 1,000 more shows</button>`}</div>`;
+  const m = document.getElementById("more"); if (m) m.onclick = () => { browse.limit += 60; paintBrowse(); };
+  const mp = document.getElementById("morePages");
+  if (mp) mp.onclick = async () => { mp.disabled = true; mp.textContent = "Loading…"; try { await loadMorePages(4); } catch (err) { alertInline(err); } paintBrowse(); };
+}
+function alertInline(err) { const d = document.createElement("div"); d.innerHTML = errorBox(err); app.prepend(d.firstChild); }
+
+/* ---------- Show detail ---------- */
+async function renderShow(id) {
+  const tok = renderToken;
+  app.innerHTML = `<a class="btn ghost small back" href="javascript:history.back()">← Back</a>${loading("Loading show…")}`;
+  let show;
+  try { show = await showFull(id); } catch (err) { app.innerHTML = errorBox(err); return; }
+  if (tok !== renderToken) return;
+  if (!show) { app.innerHTML = `<div class="empty">That show couldn't be found.</div>`; return; }
+  listShowCache.set(show.id, show);
+  const E = show._embedded || {};
+  const eps = (E.episodes || []).filter(e => e.season != null);
+  const seasons = (E.seasons || []).filter(s => s.number != null);
+  const now = new Date().toISOString();
+  const aired = eps.filter(e => e.airstamp && e.airstamp <= now).length;
+  const next = E.nextepisode;
+  const p = platformOf(show);
+  const genres = show.genres.join(", ");
+  const summary = stripHtml(show.summary) || "No synopsis is available for this show yet.";
+  const ytSearch = "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${show.name} ${show.premiered?.slice(0, 4) || ""} official trailer`);
+  const runtime = show.averageRuntime || show.runtime;
+
+  app.innerHTML = `
+  <a class="btn ghost small back" href="javascript:history.back()">← Back</a>
+  <div class="detail">
+    <div class="poster">${posterHTML(show)}</div>
+    <div style="min-width:0">
+      <h1>${esc(show.name)}</h1>
+      <div class="facts">
+        ${statusPill(show)}
+        <span>${esc(years(show))}</span>
+        ${show.rating?.average ? `<span>★ ${show.rating.average} / 10</span>` : ""}
+        ${runtime ? `<span>${runtime} min episodes</span>` : ""}
+        ${genres ? `<span>${esc(genres)}</span>` : ""}
+        ${show.language && show.language !== "English" ? `<span>${esc(show.language)}</span>` : ""}
+      </div>
+      <div class="facts" style="margin-top:-6px;color:var(--ink);font-size:1.1rem">
+        <b>${seasons.length} season${seasons.length === 1 ? "" : "s"}</b>
+        <b>${eps.length} episode${eps.length === 1 ? "" : "s"}</b>
+        ${eps.length > aired ? `<span style="color:var(--muted)">${aired} out so far</span>` : ""}
+      </div>
+      <p class="synopsis">${esc(summary)}</p>
+      <div class="actions">
+        <button class="btn ${inList(show.id) ? "saved" : ""}" data-save="${show.id}">${inList(show.id) ? "✓ In My shows" : "+ Add to My shows"}</button>
+        <button class="btn ghost" id="trailerBtn">▶ Watch trailer</button>
+        ${next?.airstamp ? `<button class="btn ghost" id="icsBtn">📅 Add next episode to calendar</button>` : ""}
+      </div>
+      <div id="trailerSlot"></div>
+      ${next ? `<div class="box"><h2>Next episode</h2><div class="next"><span class="when">${esc(next.airstamp ? relDays(next.airstamp) : "Soon")}</span>
+        <span>${esc(next.airstamp ? fmtDate(next.airstamp, { weekday: "long", month: "long", day: "numeric" }) + (show.network ? " at " + fmtTime(next.airstamp) : "") : next.airdate)}<br>
+        <span class="meta">Season ${next.season}, Episode ${next.number ?? "special"}${next.name && !/^Episode \d+$/.test(next.name) ? ` · “${esc(next.name)}”` : ""}</span></span></div></div>` : ""}
+      <div class="box" id="where"><h2>Where to watch</h2>${whereHTML(show, p)}<div id="tmdbWhere"></div></div>
+    </div>
+  </div>
+  <div class="box"><h2>Seasons & episodes</h2>${seasonsHTML(seasons, eps)}</div>
+  ${E.cast?.length ? `<div class="box"><h2>Cast</h2><div class="cast">${E.cast.slice(0, 12).map(c => `<div class="person">${c.person.image ? `<img src="${esc(c.person.image.medium)}" alt="" loading="lazy">` : `<span class="face"></span>`}<div><b>${esc(c.person.name)}</b><small>as ${esc(c.character.name)}</small></div></div>`).join("")}</div></div>` : ""}`;
+
+  // Trailer: TMDB video if a key is set, otherwise YouTube search
+  app.querySelector("#trailerBtn").onclick = () => playTrailer(show, app.querySelector("#trailerSlot"), ytSearch);
+  const ics = app.querySelector("#icsBtn");
+  if (ics) ics.onclick = () => downloadICS(show, next);
+  loadTmdbWhere(show, tok);
+}
+/* ---------- Trailers ---------- */
+let ytApi = null;
+function loadYouTubeApi() {
+  if (ytApi) return ytApi;
+  ytApi = new Promise((resolve, reject) => {
+    if (window.YT?.Player) return resolve(window.YT);
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { prev && prev(); resolve(window.YT); };
+    const sc = document.createElement("script");
+    sc.src = "https://www.youtube.com/iframe_api";
+    sc.onerror = () => { ytApi = null; reject(new Error("YouTube player didn't load")); };
+    document.head.appendChild(sc);
+    setTimeout(() => reject(new Error("YouTube player timed out")), 10000);
+  });
+  return ytApi;
+}
+async function trailerKeys(show) {
+  const tid = await tmdbIdFor(show);
+  if (!tid) return [];
+  let vids = (await tmdb(`/tv/${tid}/videos?include_video_language=en,null`))?.results || [];
+  if (!vids.some(v => v.site === "YouTube")) {
+    const info = await tmdb(`/tv/${tid}`);
+    const nums = (info?.seasons || []).map(x => x.season_number).filter(n => n > 0).reverse().slice(0, 3);
+    for (const n of nums) vids = vids.concat((await tmdb(`/tv/${tid}/season/${n}/videos?include_video_language=en,null`))?.results || []);
+  }
+  const rank = v => (v.type === "Trailer" ? 0 : v.type === "Teaser" ? 1 : v.type === "Clip" ? 2 : 3) + (v.official ? 0 : 0.5);
+  return [...new Set(vids.filter(v => v.site === "YouTube").sort((x, y) => rank(x) - rank(y)).map(v => v.key))];
+}
+async function playTrailer(show, slot, ytSearch) {
+  const searchLink = `<a class="btn small" href="${ytSearch}" target="_blank" rel="noopener">Search YouTube for the trailer ↗</a>`;
+  if (location.protocol === "file:") {
+    slot.innerHTML = `<div class="note">YouTube won't play trailers inside Show Finder while it's opened as a file on this computer. Once Show Finder is on a website, trailers play right here.<div class="actions" style="margin:10px 0 0">${searchLink}</div></div>`;
+    return;
+  }
+  slot.innerHTML = loading("Finding the trailer…");
+  let keys = [];
+  try { keys = await trailerKeys(show); } catch {}
+  if (!keys.length) {
+    slot.innerHTML = `<div class="note">No trailer is listed for ${esc(show.name)} yet.<div class="actions" style="margin:10px 0 0">${searchLink}</div></div>`;
+    return;
+  }
+  const watchLink = k => `<a href="https://www.youtube.com/watch?v=${esc(k)}" target="_blank" rel="noopener">open it on YouTube</a>`;
+  slot.innerHTML = `<div class="trailer"><div id="ytHost"></div></div><p class="meta" id="ytNote">Trouble playing? You can also ${watchLink(keys[0])}.</p>`;
+  let YT;
+  try { YT = await loadYouTubeApi(); } catch {
+    slot.querySelector(".trailer").innerHTML = `<iframe src="https://www.youtube.com/embed/${esc(keys[0])}?autoplay=1&rel=0&playsinline=1" title="${esc(show.name)} trailer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    return;
+  }
+  let i = 0;
+  const player = new YT.Player("ytHost", {
+    videoId: keys[0],
+    playerVars: { autoplay: 1, rel: 0, playsinline: 1, origin: location.origin },
+    events: {
+      onError: () => {
+        i++;
+        if (i < keys.length) { player.loadVideoById(keys[i]); document.getElementById("ytNote").innerHTML = `Trouble playing? You can also ${watchLink(keys[i])}.`; }
+        else slot.innerHTML = `<div class="note">YouTube won't let this trailer play outside its own site.<div class="actions" style="margin:10px 0 0"><a class="btn small" href="https://www.youtube.com/watch?v=${esc(keys[0])}" target="_blank" rel="noopener">Watch it on YouTube ↗</a></div></div>`;
+      }
+    }
+  });
+}
+function whereHTML(show, p) {
+  if (!p.channel) return `<p class="meta">No channel or streaming service is listed for this show yet.</p>`;
+  const s = p.svc && SVC[p.svc];
+  const price = s ? `<span class="price">${fromPrice(s.id) === 0 && s.plans.length === 1 ? "Free" : "from " + money(fromPrice(s.id)) + "/mo"}</span>` : "";
+  const have = s && owns(s.id) ? `<span class="have">✓ You have this</span>` : "";
+  const link = s ? `<a class="btn ghost small" href="${s.url}" target="_blank" rel="noopener">Visit ${esc(s.name)} ↗</a>` : "";
+  const ended = show.status === "Ended";
+  if (p.kind === "stream" || p.kind === "home") return `<div class="where-row"><span class="name">${esc(s.name)}</span>${price}${have}${link}</div><p class="meta">${esc(show.name)} ${ended ? "was" : "is"} made for ${esc(s.name)}, so every episode is there.</p>`;
+  if (p.kind === "later") return `<div class="where-row"><span class="name">${esc(p.channel)}</span><span class="meta">${p.broadcast ? "Free with a TV antenna, or with cable" : "With cable or a live TV service"}</span></div>
+    <div class="where-row"><span class="name">${esc(s.name)}</span>${price}${have}${link}</div>
+    <p class="meta">${ended ? "Episodes usually stream" : "New episodes usually stream the day after they air"} on ${esc(s.name)}. Older seasons may be on other services too.</p>`;
+  if (p.kind === "cable") return `<div class="where-row"><span class="name">${esc(p.channel)}</span><span class="meta">Cable channel</span>${have}</div>
+    <p class="meta">Watch it live with cable or a live TV service such as YouTube TV (about $82.99/mo). Many cable channels also put episodes on their own app with a cable login.</p>`;
+  return `<div class="where-row"><span class="name">${esc(p.channel)}</span>${p.broadcast ? `<span class="meta">Free with a TV antenna</span>` : ""}</div><p class="meta">${esc(p.channel)} isn't a US service we have prices for.</p>`;
+}
+async function loadTmdbWhere(show, tok) {
+  const el = () => document.getElementById("tmdbWhere");
+  if (!tmdbKey()) { el().innerHTML = `<p class="meta" style="margin-top:12px">Want the exact list of every service streaming this show? Add a free TMDB key in <a href="#settings">Settings</a>.</p>`; return; }
+  el().innerHTML = loading("Checking every streaming service…");
+  const tid = await tmdbIdFor(show);
+  const r = tid ? await tmdb(`/tv/${tid}/watch/providers`) : null;
+  if (tok !== renderToken) return;
+  const c = r?.results?.[settings.country];
+  if (!c) { el().innerHTML = `<p class="meta" style="margin-top:12px">No streaming services found for your country.</p>`; return; }
+  const group = (list, label, priced) => {
+    const seen = new Set();
+    const items = (list || []).filter(pv => {
+      const k = matchProvider(pv.provider_name) || norm(pv.provider_name);
+      if (seen.has(k)) return false; seen.add(k); return true;
+    });
+    return items.length ? `<p style="margin:14px 0 6px"><b>${label}</b></p><div class="logos">${items.map(pv => {
+      const id = priced ? matchProvider(pv.provider_name) : null;
+      const name = id ? SVC[id].name : pv.provider_name;
+      return `<span class="logo">${pv.logo_path ? `<img src="https://image.tmdb.org/t/p/w92${esc(pv.logo_path)}" alt="">` : ""}${esc(name)}${id ? ` <span class="price meta">${fromPrice(id) ? "from " + money(fromPrice(id)) + "/mo" : "Free"}</span>` : ""}${id && owns(id) ? ` <span class="have">✓ You have this</span>` : ""}</span>`;
+    }).join("")}</div>` : "";
+  };
+  const free = [...(c.free || []), ...(c.ads || [])];
+  const html = group(c.flatrate, "Streaming with a subscription", true) + group(free, "Free with ads", true) + group(c.buy, "Buy episodes or seasons", false);
+  if (c.flatrate?.length || free.length) {
+    const p = platformOf(show);
+    document.querySelectorAll("#where > .where-row, #where > p").forEach(n => n.remove());
+    if (p.channel) el().insertAdjacentHTML("beforebegin", `<p class="meta" style="margin:-4px 0 0">Originally ${show.webChannel ? "released on" : "aired on"} ${esc(p.channel)}.</p>`);
+  }
+  el().innerHTML = html || `<p class="meta" style="margin-top:12px">TMDB doesn't list any streaming services for this show right now.</p>`;
+  if (c.flatrate?.length) {
+    const id = c.flatrate.map(pv => matchProvider(pv.provider_name)).find(Boolean);
+    const entry = myList.find(x => x.id === show.id);
+    if (entry && id && entry.svc !== id) { entry.svc = id; saveList(); }
+  }
+}
+function seasonsHTML(seasons, eps) {
+  if (!seasons.length) return `<p class="meta">No episode list yet.</p>`;
+  const now = new Date().toISOString();
+  return seasons.map((s, i) => {
+    const se = eps.filter(e => e.season === s.number);
+    const first = se[0]?.airdate || s.premiereDate, last = se[se.length - 1]?.airdate || s.endDate;
+    const count = se.length || s.episodeOrder || 0;
+    const range = first ? fmtDate(first) + (last && last !== first ? " – " + fmtDate(last) : "") : "Date not announced";
+    const upcoming = se.some(e => e.airstamp && e.airstamp > now);
+    return `<details class="season" ${i === seasons.length - 1 && seasons.length <= 3 ? "open" : ""}>
+      <summary><b>Season ${s.number}</b><span>${count} episode${count === 1 ? "" : "s"}</span><span class="meta">${esc(range)}</span>${upcoming ? `<span class="pill live">New episodes coming</span>` : ""}</summary>
+      <ol class="eps">${se.map(e => {
+        const fut = e.airstamp && e.airstamp > now;
+        const sum = stripHtml(e.summary);
+        return `<li class="ep ${fut ? "future" : ""}"><span class="n">${e.number ?? "SP"}</span><span>${esc(e.name)}</span><span class="d">${e.airdate ? esc(fmtDate(e.airdate)) : "TBA"}</span>${sum ? `<span class="s">${esc(sum.length > 220 ? sum.slice(0, 217) + "…" : sum)}</span>` : ""}</li>`;
+      }).join("") || `<li class="meta">Episode titles not announced yet.</li>`}</ol>
+    </details>`;
+  }).join("");
+}
+function downloadICS(show, ep) {
+  const start = new Date(ep.airstamp);
+  const end = new Date(start.getTime() + (ep.runtime || show.runtime || 60) * 60000);
+  const f = d => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const where = platformOf(show).channel || "";
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Show Finder//EN", "BEGIN:VEVENT",
+    `UID:sf-${show.id}-${ep.id}@showfinder`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(start)}`, `DTEND:${f(end)}`,
+    `SUMMARY:${show.name} S${ep.season}E${ep.number ?? ""}`.replace(/[,;]/g, "\\$&"),
+    `LOCATION:${where}`.replace(/[,;]/g, "\\$&"),
+    "BEGIN:VALARM", "TRIGGER:-PT30M", "ACTION:DISPLAY", "DESCRIPTION:Starting soon", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  a.download = show.name.replace(/[^\w ]+/g, "") + " next episode.ics";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- My shows ---------- */
+async function renderMyList() {
+  const tok = renderToken;
+  if (!myList.length) {
+    app.innerHTML = `<div class="page-head"><div><h1>My shows</h1></div></div>
+      <div class="empty">You haven't saved any shows yet. Tap <b>+</b> on any show to keep track of new episodes and see what your streaming services cost each month.<div class="actions"><a class="btn" href="#browse">Browse shows</a><a class="btn ghost" href="#tonight">See new episodes</a></div></div>`;
+    return;
+  }
+  app.innerHTML = `<div class="page-head"><div><h1>My shows</h1><p class="sub">${myList.length} saved · soonest new episode first</p></div></div><div id="mine">${loading("Checking for new episodes…")}</div>`;
+  let shows;
+  try { shows = await Promise.all(myList.map(x => showNext(x.id))); } catch (err) { if (tok === renderToken) document.getElementById("mine").innerHTML = errorBox(err); return; }
+  if (tok !== renderToken) return;
+  shows = shows.filter(Boolean);
+  shows.forEach(s => listShowCache.set(s.id, s));
+  const nextOf = s => s._embedded?.nextepisode;
+  const withNext = shows.filter(s => nextOf(s)?.airstamp).sort((a, b) => nextOf(a).airstamp.localeCompare(nextOf(b).airstamp));
+  const without = shows.filter(s => !nextOf(s)?.airstamp);
+  const entry = id => myList.find(x => x.id === id);
+
+  // Costs
+  const svcs = [...new Set(myList.map(x => x.svc).filter(Boolean))];
+  const soon = new Date(Date.now() + 30 * 864e5).toISOString();
+  const activeSoon = id => shows.some(s => entry(s.id)?.svc === id && nextOf(s)?.airstamp && nextOf(s).airstamp < soon);
+  const total = svcs.reduce((t, id) => t + planPrice(id), 0);
+  const idle = svcs.filter(id => !activeSoon(id) && planPrice(id) > 0);
+  const savings = idle.reduce((t, id) => t + planPrice(id), 0);
+  const noSvc = myList.filter(x => !x.svc);
+
+  const upRow = s => { const n = nextOf(s); return `<a class="srow" href="#show/${s.id}">
+    <span class="t" style="color:var(--accent)">${esc(relDays(n.airstamp))}</span>
+    <span class="thumb">${s.image ? `<img src="${esc(s.image.medium)}" alt="" loading="lazy">` : ""}</span>
+    <span style="min-width:0"><h3>${esc(s.name)}</h3><span class="meta">${esc(fmtDate(n.airstamp, { weekday: "short", month: "short", day: "numeric" }))} · Season ${n.season}, Episode ${n.number ?? "special"}</span></span>
+    ${svcChip(s)}</a>`; };
+
+  document.getElementById("mine").innerHTML = `<div class="two">
+    <div style="min-width:0">
+      <h2 class="section-title" style="margin-top:0">Coming up <small>${withNext.length} with new episodes scheduled</small></h2>
+      ${withNext.length ? `<div class="slist">${withNext.map(upRow).join("")}</div>` : `<div class="empty">None of your shows have new episodes scheduled yet.</div>`}
+      ${without.length ? `<h2 class="section-title">No new episodes announced <small>${without.length}</small></h2><div class="grid">${without.map(s => card(s, s.status === "Ended" ? "Ended" : "")).join("")}</div>` : ""}
+    </div>
+    <div class="box" style="margin-top:0">
+      <h2>What My shows cost</h2>
+      <p class="meta" style="margin-top:-4px">Services needed to watch everything on your list. Pick the plan you have or want.</p>
+      ${svcs.length ? `<table class="cost-table"><tbody>${svcs.map(id => { const s = SVC[id]; const n = myList.filter(x => x.svc === id).length; return `<tr>
+        <td><span class="svc" style="--c:${s.c}"><i></i>${esc(s.name)}</span><div class="meta">${n} show${n === 1 ? "" : "s"}${owns(id) ? ' · <span class="have">✓ have it</span>' : ""}</div></td>
+        <td>${s.plans.length > 1 ? `<select data-plan="${id}" aria-label="${esc(s.name)} plan">${s.plans.map((p, i) => `<option value="${i}" ${i === planIdx(id) ? "selected" : ""}>${esc(p[0])}</option>`).join("")}</select>` : `<span class="meta">${esc(s.plans[0][0])}</span>`}</td>
+        <td class="r price">${money(planPrice(id))}</td></tr>`; }).join("")}</tbody></table>
+        <div class="total"><span>Per month</span><b>${money(total)}</b></div>
+        <div class="meta">About ${money(total * 12)} a year</div>
+        ${idle.length ? `<div class="tip"><b>Money-saving tip:</b> none of your ${idle.map(id => SVC[id].name).join(", ")} shows have new episodes in the next 30 days. Pausing ${idle.length === 1 ? "it" : "them"} until they do would save ${money(savings)} a month.</div>` : ""}`
+        : `<p class="meta">None of your saved shows are on a service with known prices.</p>`}
+      ${noSvc.length ? `<p class="meta" style="margin-top:12px">Not counted: ${noSvc.map(x => esc(x.name)).join(", ")} (no US service listed).</p>` : ""}
+      <p class="meta" style="margin-top:12px">Prices are approximate. Tell the app which services you already pay for in <a href="#settings">Settings</a>.</p>
+    </div></div>`;
+  app.querySelectorAll("[data-plan]").forEach(sel => sel.onchange = () => { settings.plans[sel.dataset.plan] = +sel.value; saveSettings(); renderMyList(); });
+}
+
+/* ---------- Settings ---------- */
+function renderSettings() {
+  app.innerHTML = `<div class="page-head"><div><h1>Settings</h1><p class="sub">Saved on this device only.</p></div></div>
+  <div class="box"><h2>Easier reading</h2>
+    <label class="check"><input type="checkbox" id="bigText" ${settings.bigText ? "checked" : ""}> Make all text bigger</label>
+    <p style="margin:14px 0 6px"><b>Light or dark</b></p>
+    <div class="chips" style="margin:0">${["system", "light", "dark"].map(t => `<button class="chip" data-theme-pick="${t}" aria-pressed="${(settings.theme || "system") === t}">${t === "system" ? "Match my device" : t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div>
+  </div>
+  <div class="box"><h2>Services I already pay for</h2>
+    <p class="meta" style="margin-top:-4px">Shows on these get a green check, and you can filter Browse to just these.</p>
+    <div class="owned">${SERVICES.filter(s => s.id !== "free").map(s => `<label class="check"><input type="checkbox" data-own="${s.id}" ${owns(s.id) ? "checked" : ""}> <span class="svc" style="--c:${s.c}"><i></i>${esc(s.name)}</span> <span class="meta price">${s.plans.length > 1 ? "from " : ""}${money(fromPrice(s.id))}</span></label>`).join("")}</div>
+  </div>
+  <div class="box"><h2>Exact streaming info and trailers (optional)</h2>
+    <p class="synopsis" style="font-size:0.95rem">Without this, Show Finder shows each show's home channel or service. With a free key from The Movie Database (TMDB), it also lists every service streaming a show in your country and plays trailers right on the page.</p>
+    ${BUILT_IN_TMDB_KEY && !settings.tmdbKey ? `<p class="have">✓ A key is already built in, so this is on. You only need to paste one here to use a different key.</p>` : ""}
+    <p class="meta">To get one: make a free account at themoviedb.org, open Settings → API, and copy the "API Key" or "API Read Access Token".</p>
+    <div class="filters" style="margin-top:10px">
+      <label style="flex:1 1 320px">TMDB key<input id="tmdbKey" type="password" value="${esc(settings.tmdbKey)}" placeholder="Paste key here" autocomplete="off"></label>
+      <label>Country<select id="country">${[["US", "United States"], ["CA", "Canada"], ["GB", "United Kingdom"], ["AU", "Australia"]].map(([c, n]) => `<option value="${c}" ${settings.country === c ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <button class="btn" id="saveKey">Save</button>
+    </div>
+    <p class="meta" id="keyMsg"></p>
+  </div>
+  <div class="box"><h2>My shows backup</h2>
+    <p class="meta" style="margin-top:-4px">Your list lives in this browser. Copy this code to move it to another device, then paste it there.</p>
+    <div class="filters"><label style="flex:1 1 320px">Backup code<input id="backup" value="${esc(myList.map(x => x.id).join(","))}"></label><button class="btn ghost" id="restore">Restore from code</button></div>
+    <p class="meta" id="backupMsg"></p>
+  </div>`;
+  app.querySelector("#bigText").onchange = e => { settings.bigText = e.target.checked; saveSettings(); applyLook(); };
+  app.querySelectorAll("[data-theme-pick]").forEach(b => b.onclick = () => { settings.theme = b.dataset.themePick; saveSettings(); applyLook(); renderSettings(); });
+  app.querySelectorAll("[data-own]").forEach(cb => cb.onchange = () => { const id = cb.dataset.own; settings.owned = cb.checked ? [...new Set([...settings.owned, id])] : settings.owned.filter(x => x !== id); saveSettings(); });
+  app.querySelector("#saveKey").onclick = async () => {
+    settings.tmdbKey = app.querySelector("#tmdbKey").value.trim(); settings.country = app.querySelector("#country").value; saveSettings();
+    const msg = app.querySelector("#keyMsg");
+    if (!tmdbKey()) { msg.textContent = "Key removed."; return; }
+    msg.textContent = "Checking key…";
+    const ok = await tmdb("/configuration");
+    msg.textContent = ok ? "Key works. Streaming lists and trailers are on." : "That key didn't work. Check that you copied all of it.";
+  };
+  app.querySelector("#restore").onclick = async () => {
+    const ids = app.querySelector("#backup").value.split(/[^\d]+/).filter(Boolean).map(Number);
+    const msg = app.querySelector("#backupMsg");
+    msg.textContent = "Restoring…";
+    const shows = (await Promise.all(ids.map(id => tvm("/shows/" + id).catch(() => null)))).filter(Boolean);
+    shows.forEach(s => { if (!inList(s.id)) toggleSave(s); });
+    msg.textContent = `Restored ${shows.length} show${shows.length === 1 ? "" : "s"}.`;
+  };
+}
+function applyLook() {
+  document.documentElement.classList.toggle("big", !!settings.bigText);
+  if (settings.theme === "light" || settings.theme === "dark") document.documentElement.dataset.theme = settings.theme;
+  else delete document.documentElement.dataset.theme;
+}
+
+applyLook();
+saveList();
+route();
+</script>
+</body>
+</html>
