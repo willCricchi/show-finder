@@ -70,7 +70,7 @@ main { padding-block: 24px 64px; }
 .chip small { font-weight: 400; opacity: 0.8; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 18px; align-items: end; }
-.filters label { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.filters label, .filters .flabel { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 select, .filters input { padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--ink); }
 .check { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; text-transform: none !important; letter-spacing: 0 !important; font-size: 1rem !important; color: var(--ink) !important; font-weight: 400 !important; cursor: pointer; }
 .check input { width: 20px; height: 20px; }
@@ -168,7 +168,82 @@ details.season summary b { font-family: var(--display); font-size: 1.1rem; }
 .owned { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; }
 footer { color: var(--muted); font-size: 0.85rem; padding-block: 24px 40px; border-top: 1px solid var(--line); }
 
+/* Multi-select filters */
+.ms { position: relative; }
+.ms > summary { list-style: none; cursor: pointer; position: relative; padding: 9px 34px 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-size: 1rem; text-transform: none; letter-spacing: 0; font-weight: 400; min-width: 9.5em; max-width: 17em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ms > summary::-webkit-details-marker { display: none; }
+.ms > summary::after { content: "▾"; position: absolute; right: 12px; color: var(--muted); }
+.ms[open] > summary, .ms.on > summary { border-color: var(--ink); }
+.ms.on > summary { font-weight: 700; }
+.ms-panel { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: max-content; min-width: 100%; max-width: min(92vw, 380px); max-height: 60vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 30px rgb(0 0 0 / .22); padding: 8px; display: grid; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 1rem; color: var(--ink); }
+.filters .ms-row { flex-direction: row; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 1rem; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 400; }
+.ms-row:hover, .ms-tri:hover { background: var(--sunk); }
+.ms-row input { width: 20px; height: 20px; }
+.ms-tri { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 4px 8px; border-radius: 8px; }
+.tri { border: 2px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: var(--muted); }
+.tri.yes[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.tri.no[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ms-hint { padding: 4px 8px 8px; font-size: 0.85rem; color: var(--muted); max-width: 32em; }
+.ms-foot { position: sticky; bottom: -8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 8px 4px; margin-top: 4px; border-top: 1px solid var(--line); background: var(--surface); }
+.linkbtn { background: none; border: none; padding: 0; color: var(--ink); text-decoration: underline; cursor: pointer; font-weight: 700; font-size: inherit; }
+
+/* Watched */
+.watch-btn { margin-top: auto; border: 2px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: var(--muted); }
+.watch-btn:hover { border-color: var(--ink); color: var(--ink); }
+.watch-btn.on { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.card.is-watched .poster img { opacity: 0.55; }
+.why { font-size: 0.82rem; color: var(--ok); font-weight: 700; }
+.head-checks { display: flex; flex-direction: column; gap: 6px; }
+
+/* Quick look */
+body:has(dialog[open]) { overflow: hidden; }
+dialog.quick { width: min(820px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: none; border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px rgb(0 0 0 / .45); overflow: auto; overscroll-behavior: contain; }
+dialog.quick::backdrop { background: rgb(8 12 24 / .62); }
+.quick-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: flex-end; padding: 10px 12px 0; pointer-events: none; }
+.quick-bar .btn { background: var(--surface); pointer-events: auto; }
+.quick-body { padding: 0 22px 22px; }
+.quick-in { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 22px; align-items: start; }
+.quick-in .quick-title { font-size: 1.8rem; }
+.quick-in .synopsis { font-size: 1rem; }
+.quick-in .facts { margin: 8px 0 10px; }
+
+/* Swipe */
+.deck { max-width: 440px; margin: 0 auto; }
+.swipe-card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: 0 14px 40px rgb(0 0 0 / .18); touch-action: pan-y; user-select: none; -webkit-user-select: none; transition: transform .22s ease, opacity .22s ease; cursor: grab; }
+.swipe-card.dragging { transition: none; cursor: grabbing; }
+.swipe-card .pimg { position: relative; overflow: hidden; height: min(46vh, 420px); background: var(--sunk); display: grid; place-items: center; font-family: var(--display); font-size: 1.4rem; }
+.swipe-card .pimg img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center 20%; pointer-events: none; }
+.sinfo { padding: 16px 18px 18px; display: grid; gap: 8px; }
+.sinfo h2 { font-size: 1.5rem; }
+.sinfo .facts { margin: 0; }
+.sclamp { margin: 0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.stamp { position: absolute; top: 22px; z-index: 2; padding: 4px 14px; border: 4px solid currentColor; border-radius: 10px; font-family: var(--display); font-weight: 800; font-size: 1.4rem; letter-spacing: .06em; opacity: 0; background: var(--surface); pointer-events: none; }
+.stamp.yes { left: 18px; color: var(--ok); transform: rotate(-12deg); }
+.stamp.no { right: 18px; color: var(--accent); transform: rotate(12deg); }
+.swipe-actions { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.sbtn { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 100px; padding: 12px 16px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+.sbtn b { font-size: 1.6rem; line-height: 1; }
+.sbtn.no b { color: var(--accent); }
+.sbtn.yes b { color: var(--ok); }
+.sbtn.seen b { color: var(--muted); }
+.sbtn:hover { border-color: var(--ink); }
+.center { text-align: center; justify-content: center; }
+details.box > summary { cursor: pointer; font-family: var(--display); font-size: 1.15rem; }
+@media (prefers-reduced-motion: reduce) { .swipe-card { transition: none; } }
+
 @media (max-width: 760px) {
+  .ms-panel { position: fixed; top: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: auto; min-width: 0; max-width: none; max-height: 70vh; }
+  header.top { position: static; }
+  nav.tabs { flex-wrap: wrap; overflow: visible; gap: 4px 2px; }
+  nav.tabs a { padding: 6px 10px; font-size: 0.9rem; }
+  .top .wrap { padding-block: 10px; gap: 8px; }
+  .swipe-card .pimg { height: 34vh; }
+  .sclamp { -webkit-line-clamp: 3; }
+  .sbtn { min-width: 0; flex: 1; padding: 10px 8px; }
+  .swipe-actions { gap: 8px; flex-wrap: nowrap; margin-top: 14px; }
+  .quick-in { grid-template-columns: 1fr; gap: 14px; }
+  .quick-in .poster { max-width: 140px; }
+  .quick-body { padding: 0 16px 18px; }
   .detail { grid-template-columns: 1fr; gap: 18px; }
   .detail .poster { max-width: 200px; }
   .two { grid-template-columns: 1fr; }
@@ -192,6 +267,8 @@ footer { color: var(--muted); font-size: 0.85rem; padding-block: 24px 40px; bord
     <nav class="tabs" aria-label="Sections">
       <a href="#tonight" data-tab="tonight">New episodes</a>
       <a href="#browse" data-tab="browse">Browse all shows</a>
+      <a href="#foryou" data-tab="foryou">For you</a>
+      <a href="#swipe" data-tab="swipe">Swipe</a>
       <a href="#mylist" data-tab="mylist">My shows <span class="count" id="listCount">0</span></a>
       <a href="#settings" data-tab="settings">Settings</a>
     </nav>
@@ -224,8 +301,12 @@ const store = {
   set(k, v) { try { localStorage.setItem("sf." + k, JSON.stringify(v)); } catch {} }
 };
 let myList = store.get("list", []);
-let settings = Object.assign({ tmdbKey: "", bigText: false, owned: [], plans: {}, hideTalk: true, country: "US" }, store.get("settings", {}));
+let settings = Object.assign({ tmdbKey: "", bigText: false, owned: [], plans: {}, hideTalk: true, hideWatched: false, country: "US" }, store.get("settings", {}));
 const saveSettings = () => store.set("settings", settings);
+let watched = store.get("watched", []);
+let maybe = store.get("maybe", []);
+let nope = store.get("nope", []);
+const saveSignals = () => { store.set("watched", watched); store.set("maybe", maybe); store.set("nope", nope); };
 const saveList = () => { store.set("list", myList); const c = document.getElementById("listCount"); c.textContent = myList.length; c.hidden = !myList.length; };
 
 const fmtDate = (d, opts) => d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString(undefined, opts || { month: "short", day: "numeric", year: "numeric" }) : "";
@@ -321,6 +402,10 @@ function matchProvider(name) {
   for (const s of SERVICES) {
     if (norm(s.name) === n || (s.home || []).some(h => norm(h) === n)) return s.id;
   }
+  for (const s of SERVICES) {
+    const k = norm(s.name);
+    if (k.length >= 4 && n.startsWith(k)) return s.id;
+  }
   if (n.startsWith("netflix")) return "netflix";
   if (n.startsWith("amazonprime")) return "prime";
   if (n.startsWith("paramount")) return "paramount";
@@ -350,10 +435,27 @@ const years = s => s.premiered ? s.premiered.slice(0, 4) + (s.ended ? (s.ended.s
 
 /* ---------- My shows ---------- */
 const inList = id => myList.some(x => x.id === id);
+const isWatched = id => watched.some(x => x.id === id);
+const inMaybe = id => maybe.some(x => x.id === id);
+const isNope = id => nope.some(x => x.id === id);
+const hideW = s => settings.hideWatched && isWatched(s.id);
+const brief = s => ({ id: s.id, name: s.name, img: s.image?.medium || "", genres: s.genres || [], type: s.type, lang: s.language, svc: platformOf(s).svc, t: Date.now() });
 function toggleSave(show) {
   if (inList(show.id)) myList = myList.filter(x => x.id !== show.id);
-  else myList.push({ id: show.id, name: show.name, img: show.image?.medium || "", svc: platformOf(show).svc, added: Date.now() });
+  else {
+    myList.push({ ...brief(show), added: Date.now() });
+    if (inMaybe(show.id)) { maybe = maybe.filter(x => x.id !== show.id); saveSignals(); }
+  }
   saveList();
+}
+function toggleWatched(show) {
+  if (isWatched(show.id)) watched = watched.filter(x => x.id !== show.id);
+  else {
+    watched.unshift(brief(show));
+    maybe = maybe.filter(x => x.id !== show.id);
+    nope = nope.filter(x => x.id !== show.id);
+  }
+  saveSignals();
 }
 const listShowCache = new Map();
 document.addEventListener("click", async e => {
@@ -366,6 +468,38 @@ document.addEventListener("click", async e => {
   document.querySelectorAll(`[data-save="${id}"]`).forEach(el => paintSave(el, inList(id)));
   if (currentTab() === "mylist") renderMyList();
 });
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-watch]");
+  if (!b) return;
+  e.preventDefault();
+  const id = +b.dataset.watch;
+  const show = listShowCache.get(id) || await tvm("/shows/" + id);
+  toggleWatched(show);
+  const on = isWatched(id);
+  document.querySelectorAll(`[data-watch="${id}"]`).forEach(el => paintWatch(el, on));
+  if (on && settings.hideWatched && !b.closest("dialog")) document.querySelectorAll(`#app .card[data-id="${id}"]`).forEach(c => c.remove());
+  if (currentTab() === "mylist") renderMyList();
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-unmaybe]");
+  if (!b) return;
+  maybe = maybe.filter(x => x.id !== +b.dataset.unmaybe);
+  saveSignals();
+  if (currentTab() === "mylist") renderMyList();
+});
+function paintWatch(el, on) {
+  el.classList.toggle(el.classList.contains("btn") ? "saved" : "on", on);
+  el.setAttribute("aria-pressed", on);
+  el.textContent = on ? "✓ Watched" : el.classList.contains("btn") ? "I've watched this" : "Mark watched";
+  el.closest(".card")?.classList.toggle("is-watched", on);
+}
+const watchBtn = (id, big) => { const w = isWatched(id); return big
+  ? `<button class="btn ghost ${w ? "saved" : ""}" data-watch="${id}" aria-pressed="${w}">${w ? "✓ Watched" : "I've watched this"}</button>`
+  : `<button class="watch-btn ${w ? "on" : ""}" data-watch="${id}" aria-pressed="${w}">${w ? "✓ Watched" : "Mark watched"}</button>`; };
+const hideWatchedToggle = () => `<label class="check"><input type="checkbox" class="hw" ${settings.hideWatched ? "checked" : ""}> Hide shows I've watched</label>`;
+function bindHideWatched(rerender) {
+  app.querySelectorAll(".hw").forEach(cb => cb.onchange = () => { settings.hideWatched = cb.checked; saveSettings(); rerender(); });
+}
 function paintSave(el, on) {
   if (el.classList.contains("save-dot")) { el.classList.toggle("on", on); el.textContent = on ? "✓" : "+"; el.setAttribute("aria-label", on ? "Remove from My shows" : "Add to My shows"); }
   else { el.classList.toggle("saved", on); el.textContent = on ? "✓ In My shows" : "+ Add to My shows"; }
@@ -376,16 +510,28 @@ function posterHTML(show, small) {
   const img = small ? show.image?.medium : (show.image?.original || show.image?.medium);
   return img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="ph">${esc(show.name)}</span>`;
 }
-function card(show, badge) {
+function card(show, badge, extra) {
   listShowCache.set(show.id, show);
   const on = inList(show.id);
-  return `<div class="card">
+  return `<div class="card ${isWatched(show.id) ? "is-watched" : ""}" data-id="${show.id}">
     <a href="#show/${show.id}" class="poster" aria-label="${esc(show.name)}">${posterHTML(show, true)}</a>
     ${badge ? `<span class="badge">${esc(badge)}</span>` : ""}
     <button class="save-dot ${on ? "on" : ""}" data-save="${show.id}" aria-label="${on ? "Remove from" : "Add to"} My shows">${on ? "✓" : "+"}</button>
     <a href="#show/${show.id}" style="text-decoration:none"><h3>${esc(show.name)}</h3></a>
     <div class="meta">${esc(years(show))}${show.rating?.average ? ` · ★ ${show.rating.average}` : ""}</div>
     <div>${svcChip(show)}</div>
+    ${extra || ""}
+    ${watchBtn(show.id)}
+  </div>`;
+}
+function entryCard(x, kind) {
+  const on = inList(x.id);
+  return `<div class="card" data-id="${x.id}">
+    <a href="#show/${x.id}" class="poster" aria-label="${esc(x.name)}">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph">${esc(x.name)}</span>`}</a>
+    ${kind === "maybe" ? `<button class="save-dot ${on ? "on" : ""}" data-save="${x.id}" aria-label="${on ? "Remove from" : "Add to"} My shows">${on ? "✓" : "+"}</button>` : ""}
+    <a href="#show/${x.id}" style="text-decoration:none"><h3>${esc(x.name)}</h3></a>
+    <div class="meta">${esc((x.genres || []).slice(0, 3).join(", "))}</div>
+    ${kind === "maybe" ? `<button class="watch-btn" data-unmaybe="${x.id}">Remove from Maybe</button>` : watchBtn(x.id)}
   </div>`;
 }
 const loading = msg => `<div class="loading"><span class="spin"></span>${esc(msg || "Loading…")}</div>`;
@@ -399,11 +545,14 @@ function route() {
   const [tab, arg] = h.split("/");
   document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   renderToken++;
+  if (quick.open) { quickPushed = false; quick.close(); }
   window.scrollTo(0, 0);
   if (tab === "show") return renderShow(+arg);
   if (tab === "search") return renderSearch(decodeURIComponent(arg || ""));
   if (tab === "browse") return renderBrowse();
   if (tab === "mylist") return renderMyList();
+  if (tab === "foryou") return renderForYou();
+  if (tab === "swipe") return renderSwipe();
   if (tab === "settings") return renderSettings();
   return renderTonight(arg);
 }
@@ -452,16 +601,17 @@ async function renderTonight(arg) {
   const sel = arg && days.some(d => isoDay(d) === arg) ? arg : isoDay(days[0]);
   app.innerHTML = `
     <div class="page-head"><div><h1>New episodes</h1><p class="sub">What's coming out on TV and streaming each day this week.</p></div>
-      <label class="check"><input type="checkbox" id="hideTalk" ${settings.hideTalk ? "checked" : ""}> Hide news, talk and sports</label></div>
+      <div class="head-checks"><label class="check"><input type="checkbox" id="hideTalk" ${settings.hideTalk ? "checked" : ""}> Hide news, talk and sports</label>${hideWatchedToggle()}</div></div>
     <div class="chips" role="group" aria-label="Pick a day">${days.map((d, i) => `<button class="chip" data-day="${isoDay(d)}" aria-pressed="${isoDay(d) === sel}">${i === 0 ? "Today" : i === 1 ? "Tomorrow" : d.toLocaleDateString(undefined, { weekday: "long" })} <small>${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</small></button>`).join("")}</div>
     <div id="sched">${loading("Checking the TV schedule…")}</div>`;
   app.querySelectorAll("[data-day]").forEach(b => b.onclick = () => location.hash = "tonight/" + b.dataset.day);
   app.querySelector("#hideTalk").onchange = e => { settings.hideTalk = e.target.checked; saveSettings(); renderTonight(sel); };
+  bindHideWatched(() => renderTonight(sel));
   try {
     const rows = await scheduleFor(sel);
     if (tok !== renderToken) return;
-    const web = rows.filter(r => r.web).sort((a, b) => (b.show.weight || 0) - (a.show.weight || 0));
-    const tv = rows.filter(r => !r.web).sort((a, b) => (a.ep.airstamp || "").localeCompare(b.ep.airstamp || ""));
+    const web = rows.filter(r => r.web && !hideW(r.show)).sort((a, b) => (b.show.weight || 0) - (a.show.weight || 0));
+    const tv = rows.filter(r => !r.web && !hideW(r.show)).sort((a, b) => (a.ep.airstamp || "").localeCompare(b.ep.airstamp || ""));
     const mine = rows.filter(r => inList(r.show.id));
     const row = r => {
       listShowCache.set(r.show.id, r.show);
@@ -483,9 +633,10 @@ async function renderTonight(arg) {
 async function renderSearch(q) {
   const tok = renderToken;
   document.getElementById("q").value = q;
-  app.innerHTML = `<div class="page-head"><div><h1>Results for “${esc(q)}”</h1></div></div><div id="res">${loading("Searching every show…")}</div>`;
+  app.innerHTML = `<div class="page-head"><div><h1>Results for “${esc(q)}”</h1></div>${hideWatchedToggle()}</div><div id="res">${loading("Searching every show…")}</div>`;
+  bindHideWatched(() => renderSearch(q));
   try {
-    const res = await tvm("/search/shows?q=" + encodeURIComponent(q));
+    const res = (await tvm("/search/shows?q=" + encodeURIComponent(q)))?.filter(r => !hideW(r.show));
     if (tok !== renderToken) return;
     document.getElementById("res").innerHTML = res?.length
       ? `<div class="grid">${res.map(r => card(r.show)).join("")}</div>`
@@ -496,7 +647,8 @@ async function renderSearch(q) {
 /* ---------- Browse ---------- */
 const GENRES = ["Action", "Adventure", "Anime", "Children", "Comedy", "Crime", "Drama", "Espionage", "Family", "Fantasy", "Food", "History", "Horror", "Legal", "Medical", "Music", "Mystery", "Nature", "Romance", "Science-Fiction", "Sports", "Supernatural", "Thriller", "Travel", "War", "Western"];
 const KINDS = ["Scripted", "Reality", "Documentary", "Animation", "Game Show", "Talk Show", "Variety"];
-const browse = { pages: new Map(), lastPage: null, nextLow: 0, nextHigh: null, limit: 60, f: Object.assign({ genre: "", kind: "", svc: "", status: "", lang: "English", sort: "popular" }, store.get("browseFilters", {})) };
+const LANGS = ["English", "Spanish", "Korean", "Japanese", "French", "German", "Italian"];
+const browse = { pages: new Map(), lastPage: null, nextLow: 0, nextHigh: null, limit: 60, f: Object.assign({ gInc: [], gExc: [], kinds: [], svcs: [], status: "", langs: ["English"], sort: "popular" }, store.get("browseFilters2", {})) };
 async function findLastPage() {
   if (browse.lastPage != null) return browse.lastPage;
   let p = store.get("lastPage", 390);
@@ -520,12 +672,13 @@ async function loadMorePages(n) {
 const allLoaded = () => [...browse.pages.values()].flat();
 function filtered() {
   const f = browse.f;
+  const svcOk = s => !f.svcs.length || f.svcs.some(v => v === "antenna" ? BROADCAST.includes(s.network?.name) : v === "mine" ? owns(platformOf(s).svc) : platformOf(s).svc === v);
   let list = allLoaded().filter(s =>
-    (!f.genre || s.genres.includes(f.genre)) &&
-    (!f.kind || s.type === f.kind) &&
-    (!f.lang || s.language === f.lang) &&
+    f.gInc.every(g => s.genres.includes(g)) && !f.gExc.some(g => s.genres.includes(g)) &&
+    (!f.kinds.length || f.kinds.includes(s.type)) &&
+    (!f.langs.length || f.langs.includes(s.language)) &&
     (!f.status || (f.status === "running" ? s.status === "Running" : s.status === "Ended")) &&
-    (!f.svc || (f.svc === "antenna" ? BROADCAST.includes(s.network?.name) : f.svc === "mine" ? settings.owned.includes(platformOf(s).svc) : platformOf(s).svc === f.svc)));
+    svcOk(s) && !hideW(s));
   const sorters = {
     popular: (a, b) => (b.weight || 0) - (a.weight || 0) || (b.rating?.average || 0) - (a.rating?.average || 0),
     rating: (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0),
@@ -542,21 +695,79 @@ async function renderBrowse() {
     <div class="page-head"><div><h1>Browse all shows</h1><p class="sub" id="bcount">Every show in the TVmaze database, a batch at a time.</p></div></div>
     <div class="filters">
       <label>Sort by<select id="f-sort">${opt("popular", "Most popular", f.sort)}${opt("rating", "Highest rated", f.sort)}${opt("newest", "Newest first", f.sort)}${opt("az", "A to Z", f.sort)}</select></label>
-      <label>Genre<select id="f-genre">${opt("", "Any genre", f.genre)}${GENRES.map(g => opt(g, g.replace("-", " "), f.genre)).join("")}</select></label>
-      <label>Kind of show<select id="f-kind">${opt("", "Any kind", f.kind)}${KINDS.map(k => opt(k, k, f.kind)).join("")}</select></label>
-      <label>Where to watch<select id="f-svc">${opt("", "Anywhere", f.svc)}${opt("mine", "Services I have", f.svc)}${opt("antenna", "Free TV (antenna)", f.svc)}${SERVICES.map(s => opt(s.id, s.name, f.svc)).join("")}</select></label>
+      ${msBox("genres", "Genres", genreRows())}
+      ${msBox("kinds", "Kind of show", msChecks("kinds", KINDS.map(k => [k, k])))}
+      ${msBox("svcs", "Where to watch", msChecks("svcs", [["mine", "Services I have"], ["antenna", "Free TV (antenna)"], ...SERVICES.map(s => [s.id, s.name])]))}
       <label>Status<select id="f-status">${opt("", "Any", f.status)}${opt("running", "Still airing", f.status)}${opt("ended", "Ended", f.status)}</select></label>
-      <label>Language<select id="f-lang">${opt("English", "English", f.lang)}${opt("", "Any language", f.lang)}${["Spanish", "Korean", "Japanese", "French", "German", "Italian"].map(l => opt(l, l, f.lang)).join("")}</select></label>
+      ${msBox("langs", "Language", msChecks("langs", LANGS.map(l => [l, l])))}
+      ${hideWatchedToggle()}
     </div>
     <div id="bres">${loading("Loading shows…")}</div>`;
-  ["sort", "genre", "kind", "svc", "status", "lang"].forEach(k => app.querySelector("#f-" + k).onchange = e => { f[k] = e.target.value; browse.limit = 60; store.set("browseFilters", f); paintBrowse(); });
+  ["sort", "status"].forEach(k => app.querySelector("#f-" + k).onchange = e => { f[k] = e.target.value; saveF(); paintBrowse(); });
+  bindHideWatched(() => { browse.limit = 60; paintBrowse(); });
+  bindMultiSelects();
   try {
     if (!browse.pages.size) await loadMorePages(6);
     if (tok !== renderToken) return;
     paintBrowse();
   } catch (err) { if (tok === renderToken) document.getElementById("bres").innerHTML = errorBox(err); }
 }
+const MS_ANY = { genres: "Any genre", kinds: "Any kind", svcs: "Anywhere", langs: "Any language" };
+const saveF = () => { browse.limit = 60; store.set("browseFilters2", browse.f); };
+const msCount = key => key === "genres" ? browse.f.gInc.length + browse.f.gExc.length : browse.f[key].length;
+function msSummary(key) {
+  const f = browse.f;
+  if (key === "genres") {
+    const parts = [...f.gInc.map(g => g.replace("-", " ")), ...f.gExc.map(g => "no " + g.replace("-", " "))];
+    return parts.length ? parts.join(", ") : MS_ANY.genres;
+  }
+  const label = x => key === "svcs" ? (x === "mine" ? "Services I have" : x === "antenna" ? "Free TV" : SVC[x]?.name || x) : x;
+  const v = f[key];
+  return !v.length ? MS_ANY[key] : v.length <= 2 ? v.map(label).join(", ") : `${v.length} picked`;
+}
+const msBox = (key, title, inner) => `<div class="flabel">${esc(title)}<details class="ms ${msCount(key) ? "on" : ""}" data-ms-box="${key}"><summary>${esc(msSummary(key))}</summary>
+  <div class="ms-panel">${inner}<div class="ms-foot"><button type="button" class="linkbtn" data-ms-clear="${key}">Clear</button><button type="button" class="btn small" data-ms-done>Done</button></div></div></details></div>`;
+const msChecks = (key, opts) => opts.map(([v, l]) => `<label class="ms-row"><input type="checkbox" data-ms="${key}" value="${esc(v)}" ${browse.f[key].includes(v) ? "checked" : ""}> ${esc(l)}</label>`).join("");
+const genreRows = () => `<div class="ms-hint">“Must have” finds shows with every genre you pick. “Leave out” skips shows with that genre.</div>` +
+  GENRES.map(g => `<div class="ms-tri"><span>${esc(g.replace("-", " "))}</span>
+    <button type="button" class="tri yes" data-tri="${g}" data-v="gInc" aria-pressed="${browse.f.gInc.includes(g)}">Must have</button>
+    <button type="button" class="tri no" data-tri="${g}" data-v="gExc" aria-pressed="${browse.f.gExc.includes(g)}">Leave out</button></div>`).join("");
+function refreshMs(key) {
+  const box = app.querySelector(`[data-ms-box="${key}"]`);
+  if (!box) return;
+  box.querySelector("summary").textContent = msSummary(key);
+  box.classList.toggle("on", !!msCount(key));
+}
+function bindMultiSelects() {
+  const f = browse.f;
+  app.querySelectorAll("[data-ms]").forEach(cb => cb.onchange = () => {
+    const k = cb.dataset.ms;
+    f[k] = [...app.querySelectorAll(`[data-ms="${k}"]:checked`)].map(x => x.value);
+    saveF(); refreshMs(k); paintBrowse();
+  });
+  app.querySelectorAll("[data-tri]").forEach(b => b.onclick = () => {
+    const g = b.dataset.tri, v = b.dataset.v, other = v === "gInc" ? "gExc" : "gInc";
+    const was = f[v].includes(g);
+    f[v] = f[v].filter(x => x !== g); f[other] = f[other].filter(x => x !== g);
+    if (!was) f[v].push(g);
+    b.parentElement.querySelectorAll(".tri").forEach(t => t.setAttribute("aria-pressed", f[t.dataset.v].includes(g)));
+    saveF(); refreshMs("genres"); paintBrowse();
+  });
+  app.querySelectorAll("[data-ms-clear]").forEach(b => b.onclick = () => {
+    const k = b.dataset.msClear, box = b.closest(".ms");
+    if (k === "genres") { f.gInc = []; f.gExc = []; box.querySelectorAll(".tri").forEach(t => t.setAttribute("aria-pressed", "false")); }
+    else { f[k] = []; box.querySelectorAll("input").forEach(i => i.checked = false); }
+    saveF(); refreshMs(k); paintBrowse();
+  });
+  app.querySelectorAll("[data-ms-done]").forEach(b => b.onclick = () => b.closest("details").open = false);
+  app.querySelectorAll("details.ms").forEach(d => d.addEventListener("toggle", () => {
+    if (d.open) app.querySelectorAll("details.ms[open]").forEach(o => { if (o !== d) o.open = false; });
+  }));
+}
+document.addEventListener("click", e => { if (!e.target.closest(".ms")) document.querySelectorAll("details.ms[open]").forEach(d => d.open = false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll("details.ms[open]").forEach(d => d.open = false); });
 function paintBrowse() {
+  if (!document.getElementById("bres")) return;
   const list = filtered();
   const total = allLoaded().length;
   const done = browse.nextLow > browse.nextHigh;
@@ -587,7 +798,7 @@ async function renderShow(id) {
   const p = platformOf(show);
   const genres = show.genres.join(", ");
   const summary = stripHtml(show.summary) || "No synopsis is available for this show yet.";
-  const ytSearch = "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${show.name} ${show.premiered?.slice(0, 4) || ""} official trailer`);
+  const ytSearch = ytSearchUrl(show);
   const runtime = show.averageRuntime || show.runtime;
 
   app.innerHTML = `
@@ -612,6 +823,7 @@ async function renderShow(id) {
       <p class="synopsis">${esc(summary)}</p>
       <div class="actions">
         <button class="btn ${inList(show.id) ? "saved" : ""}" data-save="${show.id}">${inList(show.id) ? "✓ In My shows" : "+ Add to My shows"}</button>
+        ${watchBtn(show.id, true)}
         <button class="btn ghost" id="trailerBtn">▶ Watch trailer</button>
         ${next?.airstamp ? `<button class="btn ghost" id="icsBtn">📅 Add next episode to calendar</button>` : ""}
       </div>
@@ -619,18 +831,18 @@ async function renderShow(id) {
       ${next ? `<div class="box"><h2>Next episode</h2><div class="next"><span class="when">${esc(next.airstamp ? relDays(next.airstamp) : "Soon")}</span>
         <span>${esc(next.airstamp ? fmtDate(next.airstamp, { weekday: "long", month: "long", day: "numeric" }) + (show.network ? " at " + fmtTime(next.airstamp) : "") : next.airdate)}<br>
         <span class="meta">Season ${next.season}, Episode ${next.number ?? "special"}${next.name && !/^Episode \d+$/.test(next.name) ? ` · “${esc(next.name)}”` : ""}</span></span></div></div>` : ""}
-      <div class="box" id="where"><h2>Where to watch</h2>${whereHTML(show, p)}<div id="tmdbWhere"></div></div>
+      <div class="box" id="where"><h2>Where to watch</h2>${whereHTML(show, p)}<div class="tmdb-where"></div></div>
     </div>
   </div>
   <div class="box"><h2>Seasons & episodes</h2>${seasonsHTML(seasons, eps)}</div>
   ${E.cast?.length ? `<div class="box"><h2>Cast</h2><div class="cast">${E.cast.slice(0, 12).map(c => `<div class="person">${c.person.image ? `<img src="${esc(c.person.image.medium)}" alt="" loading="lazy">` : `<span class="face"></span>`}<div><b>${esc(c.person.name)}</b><small>as ${esc(c.character.name)}</small></div></div>`).join("")}</div></div>` : ""}`;
 
-  // Trailer: TMDB video if a key is set, otherwise YouTube search
   app.querySelector("#trailerBtn").onclick = () => playTrailer(show, app.querySelector("#trailerSlot"), ytSearch);
   const ics = app.querySelector("#icsBtn");
   if (ics) ics.onclick = () => downloadICS(show, next);
-  loadTmdbWhere(show, tok);
+  loadTmdbWhere(show, app.querySelector("#where"));
 }
+const ytSearchUrl = show => "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${show.name} ${show.premiered?.slice(0, 4) || ""} official trailer`);
 /* ---------- Trailers ---------- */
 let ytApi = null;
 function loadYouTubeApi() {
@@ -673,20 +885,22 @@ async function playTrailer(show, slot, ytSearch) {
     return;
   }
   const watchLink = k => `<a href="https://www.youtube.com/watch?v=${esc(k)}" target="_blank" rel="noopener">open it on YouTube</a>`;
-  slot.innerHTML = `<div class="trailer"><div id="ytHost"></div></div><p class="meta" id="ytNote">Trouble playing? You can also ${watchLink(keys[0])}.</p>`;
+  const hostId = "yt" + Math.random().toString(36).slice(2);
+  slot.innerHTML = `<div class="trailer"><div id="${hostId}"></div></div><p class="meta ytnote">Trouble playing? You can also ${watchLink(keys[0])}.</p>`;
   let YT;
   try { YT = await loadYouTubeApi(); } catch {
     slot.querySelector(".trailer").innerHTML = `<iframe src="https://www.youtube.com/embed/${esc(keys[0])}?autoplay=1&rel=0&playsinline=1" title="${esc(show.name)} trailer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
     return;
   }
   let i = 0;
-  const player = new YT.Player("ytHost", {
+  if (!slot.isConnected) return;
+  const player = new YT.Player(hostId, {
     videoId: keys[0],
     playerVars: { autoplay: 1, rel: 0, playsinline: 1, origin: location.origin },
     events: {
       onError: () => {
         i++;
-        if (i < keys.length) { player.loadVideoById(keys[i]); document.getElementById("ytNote").innerHTML = `Trouble playing? You can also ${watchLink(keys[i])}.`; }
+        if (i < keys.length) { player.loadVideoById(keys[i]); slot.querySelector(".ytnote").innerHTML = `Trouble playing? You can also ${watchLink(keys[i])}.`; }
         else slot.innerHTML = `<div class="note">YouTube won't let this trailer play outside its own site.<div class="actions" style="margin:10px 0 0"><a class="btn small" href="https://www.youtube.com/watch?v=${esc(keys[0])}" target="_blank" rel="noopener">Watch it on YouTube ↗</a></div></div>`;
       }
     }
@@ -707,13 +921,13 @@ function whereHTML(show, p) {
     <p class="meta">Watch it live with cable or a live TV service such as YouTube TV (about $82.99/mo). Many cable channels also put episodes on their own app with a cable login.</p>`;
   return `<div class="where-row"><span class="name">${esc(p.channel)}</span>${p.broadcast ? `<span class="meta">Free with a TV antenna</span>` : ""}</div><p class="meta">${esc(p.channel)} isn't a US service we have prices for.</p>`;
 }
-async function loadTmdbWhere(show, tok) {
-  const el = () => document.getElementById("tmdbWhere");
+async function loadTmdbWhere(show, box) {
+  const el = () => box.querySelector(".tmdb-where");
   if (!tmdbKey()) { el().innerHTML = `<p class="meta" style="margin-top:12px">Want the exact list of every service streaming this show? Add a free TMDB key in <a href="#settings">Settings</a>.</p>`; return; }
   el().innerHTML = loading("Checking every streaming service…");
   const tid = await tmdbIdFor(show);
   const r = tid ? await tmdb(`/tv/${tid}/watch/providers`) : null;
-  if (tok !== renderToken) return;
+  if (!box.isConnected) return;
   const c = r?.results?.[settings.country];
   if (!c) { el().innerHTML = `<p class="meta" style="margin-top:12px">No streaming services found for your country.</p>`; return; }
   const group = (list, label, priced) => {
@@ -732,7 +946,7 @@ async function loadTmdbWhere(show, tok) {
   const html = group(c.flatrate, "Streaming with a subscription", true) + group(free, "Free with ads", true) + group(c.buy, "Buy episodes or seasons", false);
   if (c.flatrate?.length || free.length) {
     const p = platformOf(show);
-    document.querySelectorAll("#where > .where-row, #where > p").forEach(n => n.remove());
+    box.querySelectorAll(":scope > .where-row, :scope > p").forEach(n => n.remove());
     if (p.channel) el().insertAdjacentHTML("beforebegin", `<p class="meta" style="margin:-4px 0 0">Originally ${show.webChannel ? "released on" : "aired on"} ${esc(p.channel)}.</p>`);
   }
   el().innerHTML = html || `<p class="meta" style="margin-top:12px">TMDB doesn't list any streaming services for this show right now.</p>`;
@@ -781,9 +995,11 @@ function downloadICS(show, ep) {
 /* ---------- My shows ---------- */
 async function renderMyList() {
   const tok = renderToken;
+  const extras = (maybe.length ? `<h2 class="section-title">Maybe <small>${maybe.length} you liked in Swipe · tap + to move one into My shows</small></h2><div class="grid">${maybe.map(x => entryCard(x, "maybe")).join("")}</div>` : "") +
+    (watched.length ? `<details class="box" style="margin-top:30px"><summary>Shows I've watched (${watched.length})</summary><div class="grid" style="margin-top:16px">${watched.map(x => entryCard(x, "watched")).join("")}</div></details>` : "");
   if (!myList.length) {
     app.innerHTML = `<div class="page-head"><div><h1>My shows</h1></div></div>
-      <div class="empty">You haven't saved any shows yet. Tap <b>+</b> on any show to keep track of new episodes and see what your streaming services cost each month.<div class="actions"><a class="btn" href="#browse">Browse shows</a><a class="btn ghost" href="#tonight">See new episodes</a></div></div>`;
+      <div class="empty">You haven't saved any shows yet. Tap <b>+</b> on any show to keep track of new episodes and see what your streaming services cost each month.<div class="actions"><a class="btn" href="#browse">Browse shows</a><a class="btn ghost" href="#swipe">Try Swipe</a></div></div>${extras}`;
     return;
   }
   app.innerHTML = `<div class="page-head"><div><h1>My shows</h1><p class="sub">${myList.length} saved · soonest new episode first</p></div></div><div id="mine">${loading("Checking for new episodes…")}</div>`;
@@ -831,7 +1047,7 @@ async function renderMyList() {
         : `<p class="meta">None of your saved shows are on a service with known prices.</p>`}
       ${noSvc.length ? `<p class="meta" style="margin-top:12px">Not counted: ${noSvc.map(x => esc(x.name)).join(", ")} (no US service listed).</p>` : ""}
       <p class="meta" style="margin-top:12px">Prices are approximate. Tell the app which services you already pay for in <a href="#settings">Settings</a>.</p>
-    </div></div>`;
+    </div></div>${extras}`;
   app.querySelectorAll("[data-plan]").forEach(sel => sel.onchange = () => { settings.plans[sel.dataset.plan] = +sel.value; saveSettings(); renderMyList(); });
 }
 
@@ -858,9 +1074,9 @@ function renderSettings() {
     </div>
     <p class="meta" id="keyMsg"></p>
   </div>
-  <div class="box"><h2>My shows backup</h2>
-    <p class="meta" style="margin-top:-4px">Your list lives in this browser. Copy this code to move it to another device, then paste it there.</p>
-    <div class="filters"><label style="flex:1 1 320px">Backup code<input id="backup" value="${esc(myList.map(x => x.id).join(","))}"></label><button class="btn ghost" id="restore">Restore from code</button></div>
+  <div class="box"><h2>Back up my lists</h2>
+    <p class="meta" style="margin-top:-4px">My shows, watched shows, Maybe and Swipe ratings live in this browser. Copy this code to move them to another device, then paste it there.</p>
+    <div class="filters"><label style="flex:1 1 320px">Backup code<input id="backup" value="${esc(backupCode())}"></label><button class="btn ghost" id="restore">Restore from code</button></div>
     <p class="meta" id="backupMsg"></p>
   </div>`;
   app.querySelector("#bigText").onchange = e => { settings.bigText = e.target.checked; saveSettings(); applyLook(); };
@@ -875,19 +1091,370 @@ function renderSettings() {
     msg.textContent = ok ? "Key works. Streaming lists and trailers are on." : "That key didn't work. Check that you copied all of it.";
   };
   app.querySelector("#restore").onclick = async () => {
-    const ids = app.querySelector("#backup").value.split(/[^\d]+/).filter(Boolean).map(Number);
+    const code = app.querySelector("#backup").value;
+    const parts = { L: [], W: [], M: [], N: [] };
+    if (code.includes(":")) code.split(";").forEach(seg => { const [k, v] = seg.split(":"); if (parts[k?.trim()]) parts[k.trim()] = (v || "").split(/[^\d]+/).filter(Boolean).map(Number); });
+    else parts.L = code.split(/[^\d]+/).filter(Boolean).map(Number);
     const msg = app.querySelector("#backupMsg");
     msg.textContent = "Restoring…";
-    const shows = (await Promise.all(ids.map(id => tvm("/shows/" + id).catch(() => null)))).filter(Boolean);
-    shows.forEach(s => { if (!inList(s.id)) toggleSave(s); });
-    msg.textContent = `Restored ${shows.length} show${shows.length === 1 ? "" : "s"}.`;
+    const fetchAll = ids => Promise.all(ids.map(id => tvm("/shows/" + id).catch(() => null))).then(a => a.filter(Boolean));
+    const [L, W, M, N] = await Promise.all([parts.L, parts.W, parts.M, parts.N].map(fetchAll));
+    L.forEach(s => { if (!inList(s.id)) toggleSave(s); });
+    W.forEach(s => { if (!isWatched(s.id)) watched.push(brief(s)); });
+    M.forEach(s => { if (!inMaybe(s.id) && !inList(s.id)) maybe.push(brief(s)); });
+    N.forEach(s => { if (!isNope(s.id)) nope.push(brief(s)); });
+    saveSignals();
+    msg.textContent = `Restored ${L.length} in My shows, ${W.length} watched, ${M.length} in Maybe and ${N.length} passed on.`;
   };
 }
+const backupCode = () => `L:${myList.map(x => x.id).join(",")};W:${watched.map(x => x.id).join(",")};M:${maybe.map(x => x.id).join(",")};N:${nope.map(x => x.id).join(",")}`;
 function applyLook() {
   document.documentElement.classList.toggle("big", !!settings.bigText);
   if (settings.theme === "light" || settings.theme === "dark") document.documentElement.dataset.theme = settings.theme;
   else delete document.documentElement.dataset.theme;
 }
+
+/* ---------- Quick look ---------- */
+const quick = document.createElement("dialog");
+quick.className = "quick";
+quick.setAttribute("aria-label", "Show details");
+document.body.appendChild(quick);
+let quickPushed = false, quickTok = 0;
+function openQuick(id) {
+  const tok = ++quickTok;
+  quick.innerHTML = `<div class="quick-bar"><button class="btn ghost small" data-quick-close>✕ Close</button></div><div class="quick-body">${loading("Loading show…")}</div>`;
+  if (!quick.open) {
+    quick.showModal();
+    history.pushState({ quick: true }, "");
+    quickPushed = true;
+  }
+  quick.scrollTop = 0;
+  showFull(id).then(show => {
+    if (tok !== quickTok || !quick.open) return;
+    if (!show) { quick.querySelector(".quick-body").innerHTML = `<div class="empty">That show couldn't be found.</div>`; return; }
+    fillQuick(show);
+  }).catch(err => { if (quick.open) quick.querySelector(".quick-body").innerHTML = errorBox(err); });
+}
+function fillQuick(show) {
+  listShowCache.set(show.id, show);
+  const E = show._embedded || {};
+  const eps = (E.episodes || []).filter(e => e.season != null);
+  const seasons = (E.seasons || []).filter(s => s.number != null);
+  const next = E.nextepisode;
+  const summary = stripHtml(show.summary) || "No synopsis is available for this show yet.";
+  quick.querySelector(".quick-body").innerHTML = `<div class="quick-in">
+    <div class="poster">${posterHTML(show, true)}</div>
+    <div style="min-width:0">
+      <h2 class="quick-title">${esc(show.name)}</h2>
+      <div class="facts">${statusPill(show)}<span>${esc(years(show))}</span>${show.rating?.average ? `<span>★ ${show.rating.average} / 10</span>` : ""}${show.genres.length ? `<span>${esc(show.genres.join(", "))}</span>` : ""}</div>
+      <div class="facts" style="color:var(--ink);font-size:1.05rem"><b>${seasons.length} season${seasons.length === 1 ? "" : "s"}</b><b>${eps.length} episode${eps.length === 1 ? "" : "s"}</b></div>
+      <p class="synopsis">${esc(summary)}</p>
+      ${next?.airstamp ? `<p><b style="color:var(--accent)">Next episode ${esc(relDays(next.airstamp).toLowerCase())}</b> · ${esc(fmtDate(next.airstamp, { weekday: "short", month: "short", day: "numeric" }))} · Season ${next.season}, Episode ${next.number ?? "special"}</p>` : ""}
+      <div class="actions">
+        <button class="btn ${inList(show.id) ? "saved" : ""}" data-save="${show.id}">${inList(show.id) ? "✓ In My shows" : "+ Add to My shows"}</button>
+        ${watchBtn(show.id, true)}
+        <button class="btn ghost" data-qtrailer>▶ Watch trailer</button>
+        <a class="btn ghost" href="#show/${show.id}" data-full>See full details →</a>
+      </div>
+      <div class="qtrailer"></div>
+      <div class="box where-box"><h2>Where to watch</h2>${whereHTML(show, platformOf(show))}<div class="tmdb-where"></div></div>
+    </div>
+  </div>`;
+  quick.querySelector("[data-qtrailer]").onclick = () => playTrailer(show, quick.querySelector(".qtrailer"), ytSearchUrl(show));
+  quick.querySelector("[data-full]").onclick = e => {
+    e.preventDefault();
+    quickPushed = false;
+    quick.close();
+    history.replaceState(null, "", "#show/" + show.id);
+    route();
+  };
+  loadTmdbWhere(show, quick.querySelector(".where-box"));
+}
+quick.addEventListener("close", () => {
+  quick.innerHTML = "";
+  if (quickPushed) { quickPushed = false; history.back(); }
+});
+quick.addEventListener("click", e => {
+  if (e.target === quick || e.target.closest("[data-quick-close]")) quick.close();
+});
+window.addEventListener("popstate", () => {
+  if (quick.open) { quickPushed = false; quick.close(); }
+});
+document.addEventListener("click", e => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const q = e.target.closest("[data-quick]");
+  if (q) { e.preventDefault(); openQuick(+q.dataset.quick); return; }
+  const a = e.target.closest('a[href^="#show/"]');
+  if (!a || a.closest("dialog") || a.hasAttribute("data-full")) return;
+  e.preventDefault();
+  openQuick(+a.getAttribute("href").split("/")[1]);
+});
+
+/* ---------- Taste profile & recommendations ---------- */
+const excluded = id => isWatched(id) || inList(id) || inMaybe(id) || isNope(id);
+function likedEntries() {
+  const m = new Map();
+  [...watched, ...myList, ...maybe].forEach(x => { if (!m.has(x.id)) m.set(x.id, x); });
+  return [...m.values()].sort((a, b) => (b.t || b.added || 0) - (a.t || a.added || 0));
+}
+const signalSig = () => [watched, myList, maybe, nope].map(a => a.map(x => x.id).join(".")).join("|") + "|" + (tmdbKey() ? 1 : 0);
+async function metaFor(x) {
+  if (x.genres) return x;
+  const s = await tvm("/shows/" + x.id).catch(() => null);
+  return s ? { ...brief(s), t: x.t || x.added } : x;
+}
+function tasteProfile(liked, disliked) {
+  const g = {}, k = {}, l = {};
+  liked.forEach(x => {
+    (x.genres || []).forEach(v => g[v] = (g[v] || 0) + 1);
+    if (x.type) k[x.type] = (k[x.type] || 0) + 1;
+    if (x.lang) l[x.lang] = (l[x.lang] || 0) + 1;
+  });
+  disliked.forEach(x => (x.genres || []).forEach(v => g[v] = (g[v] || 0) - 0.5));
+  return { g, k, l, n: Math.max(1, liked.length) };
+}
+function tasteScore(show, prof) {
+  let sc = 0;
+  (show.genres || []).forEach(v => sc += (prof.g[v] || 0) / prof.n);
+  sc += ((prof.k[show.type] || 0) / prof.n) * 0.8;
+  if (Object.keys(prof.l).length) sc += prof.l[show.language] ? 0.4 : -1.5;
+  return sc;
+}
+const topGenres = (show, prof) => (show.genres || []).filter(g => (prof.g[g] || 0) > 0).sort((a, b) => prof.g[b] - prof.g[a]).slice(0, 2);
+async function tvmFromTmdb(tid, name) {
+  const ex = await tmdb(`/tv/${tid}/external_ids`);
+  let s = null;
+  if (ex?.tvdb_id) s = await tvm(`/lookup/shows?thetvdb=${ex.tvdb_id}`).catch(() => null);
+  if (!s && ex?.imdb_id) s = await tvm(`/lookup/shows?imdb=${ex.imdb_id}`).catch(() => null);
+  if (!s) s = await tvm(`/singlesearch/shows?q=${encodeURIComponent(name)}`).catch(() => null);
+  return s;
+}
+let recsCache = null;
+async function computeRecs(progress) {
+  const sig = signalSig();
+  if (recsCache?.sig === sig) return recsCache.items;
+  const liked = await Promise.all(likedEntries().map(metaFor));
+  const prof = tasteProfile(liked, nope);
+  const cands = new Map();
+  const add = (show, pts, because) => {
+    if (!show || excluded(show.id)) return;
+    const c = cands.get(show.id) || { show, pts: 0, because: new Set() };
+    c.pts += pts;
+    (because || []).forEach(b => c.because.add(b));
+    cands.set(show.id, c);
+  };
+  // 1. "People who liked this also liked" from TMDB
+  if (tmdbKey()) {
+    const tmdbC = new Map();
+    for (const seed of liked.slice(0, 10)) {
+      progress?.(`Looking at shows like ${seed.name}…`);
+      const full = await tvm("/shows/" + seed.id).catch(() => null);
+      const tid = full && await tmdbIdFor(full);
+      if (!tid) continue;
+      const r = await tmdb(`/tv/${tid}/recommendations`);
+      (r?.results || []).forEach((x, rank) => {
+        const c = tmdbC.get(x.id) || { x, pts: 0, because: new Set() };
+        c.pts += 1 + (20 - rank) / 40;
+        c.because.add(seed.name);
+        tmdbC.set(x.id, c);
+      });
+    }
+    const wantEn = (prof.l.English || 0) >= prof.n / 2;
+    const top = [...tmdbC.values()]
+      .filter(c => !wantEn || c.x.original_language === "en")
+      .sort((a, b) => (b.pts + (b.x.vote_average || 0) / 20) - (a.pts + (a.x.vote_average || 0) / 20))
+      .slice(0, 30);
+    progress?.("Matching picks to the show guide…");
+    for (let i = 0; i < top.length; i += 5) {
+      const batch = await Promise.all(top.slice(i, i + 5).map(c => tvmFromTmdb(c.x.id, c.x.name).then(s => [c, s])));
+      batch.forEach(([c, s]) => add(s, c.pts * 1.6, [...c.because]));
+    }
+  }
+  // 2. Popular shows that match the taste profile
+  progress?.("Checking popular shows against your taste…");
+  if (!browse.pages.size) await loadMorePages(6);
+  allLoaded()
+    .filter(s => s.image && (s.weight || 0) >= 60 && !excluded(s.id))
+    .map(s => [s, tasteScore(s, prof)])
+    .filter(([, t]) => t > 0.9)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 40)
+    .forEach(([s]) => add(s, 0.3, null));
+  const items = [...cands.values()].map(c => {
+    const t = tasteScore(c.show, prof);
+    const score = c.pts + t * 1.5 + (c.show.rating?.average || 6) / 10 + (c.show.weight || 0) / 100;
+    const b = [...c.because];
+    const tg = topGenres(c.show, prof);
+    const why = b.length ? `Because you liked ${b.slice(0, 2).join(" and ")}${b.length > 2 ? ` and ${b.length - 2} more` : ""}`
+      : tg.length ? `You like ${tg.map(g => g.replace("-", " ")).join(" and ")} shows` : "Popular with people like you";
+    return { show: c.show, score, why, t };
+  }).filter(x => x.t > -0.5).sort((a, b) => b.score - a.score).slice(0, 48);
+  recsCache = { sig, items };
+  return items;
+}
+async function renderForYou() {
+  const tok = renderToken;
+  const liked = likedEntries();
+  app.innerHTML = `<div class="page-head"><div><h1>For you</h1><p class="sub">Picks based on the shows you've watched, saved, or liked in Swipe.</p></div>
+    ${liked.length ? `<button class="btn ghost small" id="refreshRecs">Refresh picks</button>` : ""}</div><div id="recs"></div>`;
+  const out = document.getElementById("recs");
+  if (!liked.length) {
+    out.innerHTML = `<div class="empty">Show Finder doesn't know your taste yet. Mark a few shows as watched, add some to My shows, or rate shows in Swipe, and picks will show up here.
+      <div class="actions"><a class="btn" href="#swipe">Start swiping</a><a class="btn ghost" href="#browse">Browse shows</a></div></div>`;
+    return;
+  }
+  app.querySelector("#refreshRecs").onclick = () => { recsCache = null; renderForYou(); };
+  out.innerHTML = `<div class="loading"><span class="spin"></span><span id="recMsg">Finding shows you'll like…</span></div>`;
+  try {
+    const items = await computeRecs(msg => { const m = document.getElementById("recMsg"); if (m && tok === renderToken) m.textContent = msg; });
+    if (tok !== renderToken) return;
+    const few = liked.length < 4 ? `<div class="note" style="margin-bottom:18px">Picks get better once Show Finder knows 4 or 5 shows you like. <a href="#swipe">Swipe through a few more</a>.</div>` : "";
+    out.innerHTML = few + (items.length
+      ? `<div class="grid">${items.map(r => card(r.show, null, `<div class="why">${esc(r.why)}</div>`)).join("")}</div>`
+      : `<div class="empty">No picks yet. Try marking a few more shows you've enjoyed.</div>`) +
+      `<p class="meta center" style="margin-top:24px">Not quite right? Every swipe in <a href="#swipe">Swipe</a> teaches Show Finder more.</p>`;
+  } catch (err) { if (tok === renderToken) out.innerHTML = errorBox(err); }
+}
+
+/* ---------- Swipe ---------- */
+const swipe = { deck: [], idx: 0, history: [] };
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+async function buildDeck() {
+  if (!browse.pages.size) await loadMorePages(6);
+  const langs = new Set(["English", ...likedEntries().map(x => x.lang).filter(Boolean)]);
+  const pool = allLoaded().filter(s => s.image && s.summary && (s.weight || 0) >= 70 && langs.has(s.language) && !excluded(s.id));
+  // Random order, nudged toward the viewer's taste once there is one
+  const liked = likedEntries();
+  const prof = liked.length ? tasteProfile(await Promise.all(liked.map(metaFor)), nope) : null;
+  const key = new Map(pool.map(s => [s.id, Math.random() + (prof ? Math.max(-0.5, tasteScore(s, prof)) * 0.4 : 0)]));
+  pool.sort((a, b) => key.get(b.id) - key.get(a.id));
+  const recs = (recsCache?.items || []).map(r => r.show).filter(s => s.image && !excluded(s.id));
+  const deck = [], seen = new Set();
+  let ri = 0;
+  for (let i = 0; i < pool.length; i++) {
+    if (i % 3 === 2 && ri < recs.length) { const r = recs[ri++]; if (!seen.has(r.id)) { seen.add(r.id); deck.push(r); } }
+    if (!seen.has(pool[i].id)) { seen.add(pool[i].id); deck.push(pool[i]); }
+  }
+  swipe.deck = deck;
+  swipe.idx = 0;
+}
+async function renderSwipe() {
+  const tok = renderToken;
+  app.innerHTML = `<div class="page-head"><div><h1>Swipe</h1><p class="sub">Swipe right if a show looks good, left if it doesn't. Shows you like go to your Maybe list, and every swipe sharpens your For you picks.</p></div>
+    <div class="meta" id="swipeStats"></div></div>
+    <div class="deck" id="deck">${loading("Shuffling shows…")}</div>
+    <div class="swipe-actions">
+      <button class="sbtn no" data-swipe="no"><b>✕</b>Not for me</button>
+      <button class="sbtn seen" data-swipe="seen"><b>✓</b>Seen it</button>
+      <button class="sbtn yes" data-swipe="yes"><b>♥</b>Interested</button>
+    </div>
+    <div class="actions center" style="margin-top:14px"><button class="linkbtn" id="undoSwipe" hidden>Undo last swipe</button></div>
+    <p class="meta center">On a keyboard: ← not for me, ↓ seen it, → interested.</p>`;
+  app.querySelectorAll("[data-swipe]").forEach(b => b.onclick = () => commitSwipe(b.dataset.swipe));
+  app.querySelector("#undoSwipe").onclick = undoSwipe;
+  try {
+    swipe.deck = swipe.deck.filter((s, i) => i < swipe.idx || !excluded(s.id));
+    if (swipe.idx >= swipe.deck.length) await buildDeck();
+    if (tok !== renderToken) return;
+    drawSwipe();
+  } catch (err) { if (tok === renderToken) document.getElementById("deck").innerHTML = errorBox(err); }
+}
+function swipeStats() {
+  const el = document.getElementById("swipeStats");
+  if (el) el.innerHTML = `${maybe.length} in <a href="#mylist">Maybe</a> · ${nope.length} passed on`;
+  const u = document.getElementById("undoSwipe");
+  if (u) u.hidden = !swipe.history.length;
+}
+function drawSwipe() {
+  const deckEl = document.getElementById("deck");
+  if (!deckEl) return;
+  swipeStats();
+  const show = swipe.deck[swipe.idx];
+  app.querySelectorAll("[data-swipe]").forEach(b => b.disabled = !show);
+  if (!show) {
+    const more = browse.nextLow <= browse.nextHigh;
+    deckEl.innerHTML = `<div class="empty center">You've been through this whole batch.<div class="actions center">${more ? `<button class="btn" id="moreSwipe">Load more shows</button>` : ""}<a class="btn ghost" href="#foryou">See For you picks</a></div></div>`;
+    const m = document.getElementById("moreSwipe");
+    if (m) m.onclick = async () => { m.disabled = true; m.textContent = "Loading…"; await loadMorePages(4); await buildDeck(); drawSwipe(); };
+    return;
+  }
+  listShowCache.set(show.id, show);
+  const sum = stripHtml(show.summary);
+  deckEl.innerHTML = `<div class="swipe-card" id="scard">
+    <span class="stamp yes">YES</span><span class="stamp no">NOPE</span>
+    <div class="pimg">${show.image ? `<img src="${esc(show.image.original || show.image.medium)}" alt="" draggable="false">` : esc(show.name)}</div>
+    <div class="sinfo">
+      <h2>${esc(show.name)}</h2>
+      <div class="facts">${statusPill(show)}<span>${esc(years(show))}</span>${show.rating?.average ? `<span>★ ${show.rating.average}</span>` : ""}</div>
+      <div class="meta">${esc(show.genres.join(", "))}</div>
+      <div>${svcChip(show)}</div>
+      <p class="sclamp">${esc(sum)}</p>
+      <div><button class="linkbtn" data-quick="${show.id}">See details and trailer</button></div>
+    </div>
+  </div>`;
+  const next = swipe.deck[swipe.idx + 1];
+  if (next?.image) { const im = new Image(); im.src = next.image.original || next.image.medium; }
+  bindDrag(document.getElementById("scard"));
+}
+function bindDrag(el) {
+  let x0 = null, dx = 0;
+  const yes = el.querySelector(".stamp.yes"), no = el.querySelector(".stamp.no");
+  el.addEventListener("pointerdown", e => {
+    if (e.target.closest("button, a")) return;
+    x0 = e.clientX; dx = 0;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add("dragging");
+  });
+  el.addEventListener("pointermove", e => {
+    if (x0 == null) return;
+    dx = e.clientX - x0;
+    el.style.transform = `translateX(${dx}px) rotate(${dx / 22}deg)`;
+    yes.style.opacity = Math.max(0, Math.min(1, dx / 100));
+    no.style.opacity = Math.max(0, Math.min(1, -dx / 100));
+  });
+  const end = () => {
+    if (x0 == null) return;
+    x0 = null;
+    el.classList.remove("dragging");
+    if (dx > 110) commitSwipe("yes");
+    else if (dx < -110) commitSwipe("no");
+    else { el.style.transform = ""; yes.style.opacity = 0; no.style.opacity = 0; }
+  };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+}
+function commitSwipe(kind) {
+  const show = swipe.deck[swipe.idx];
+  if (!show) return;
+  const b = brief(show);
+  if (kind === "yes" && !inMaybe(show.id)) maybe.unshift(b);
+  if (kind === "no" && !isNope(show.id)) nope.unshift(b);
+  if (kind === "seen" && !isWatched(show.id)) watched.unshift(b);
+  saveSignals();
+  swipe.history.push({ id: show.id, kind });
+  swipe.idx++;
+  const el = document.getElementById("scard");
+  if (el && !reduceMotion()) {
+    el.style.transform = kind === "yes" ? "translateX(130%) rotate(18deg)" : kind === "no" ? "translateX(-130%) rotate(-18deg)" : "translateY(30%) scale(.9)";
+    el.style.opacity = 0;
+    setTimeout(drawSwipe, 200);
+  } else drawSwipe();
+}
+function undoSwipe() {
+  const last = swipe.history.pop();
+  if (!last) return;
+  if (last.kind === "yes") maybe = maybe.filter(x => x.id !== last.id);
+  if (last.kind === "no") nope = nope.filter(x => x.id !== last.id);
+  if (last.kind === "seen") watched = watched.filter(x => x.id !== last.id);
+  saveSignals();
+  swipe.idx = Math.max(0, swipe.idx - 1);
+  drawSwipe();
+}
+document.addEventListener("keydown", e => {
+  if (currentTab() !== "swipe" || quick.open || e.target.closest?.("input, select, textarea, button, a")) return;
+  const k = { ArrowRight: "yes", ArrowLeft: "no", ArrowDown: "seen" }[e.key];
+  if (k) { e.preventDefault(); commitSwipe(k); }
+});
 
 applyLook();
 saveList();
